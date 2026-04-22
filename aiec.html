@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elasticsearch 9.3 — A Practical Tutorial for New Developers</title>
+<meta name="description" content="A hands-on, step-by-step tutorial for loading data into Elasticsearch 9.3 using Java 21, Go, and Python — with Docker Compose, mappings, bulk ingestion, and search best practices." />
+
+<!-- Tailwind CSS (Play CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Prism.js for syntax highlighting -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+
+<style>
+  :root {
+    --bg:          #0b0b0d;
+    --bg-soft:     #121216;
+    --surface:     #17171c;
+    --surface-2:   #1d1d24;
+    --border:      #2a2a33;
+    --text:        #ece8dd;
+    --text-dim:    #a7a39a;
+    --text-faint:  #6b6860;
+    --amber:       #f5a524;
+    --amber-soft:  #fbbf24;
+    --coral:       #ff6b4a;
+    --teal:        #4fd1c5;
+    --indigo:      #8b93ff;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-feature-settings: "ss01", "ss02", "cv11";
+  }
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+  .font-mono    { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Subtle grain + gradient backdrop */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 0%, rgba(245,165,36,0.08), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 100%, rgba(139,147,255,0.07), transparent 60%);
+    z-index: 0;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.035;
+    z-index: 0;
+    mix-blend-mode: overlay;
+  }
+  main, aside, nav, footer, header { position: relative; z-index: 1; }
+
+  /* TOC active state */
+  .toc-link {
+    display: block;
+    padding: 6px 12px;
+    border-left: 2px solid transparent;
+    color: var(--text-dim);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+  }
+  .toc-link:hover { color: var(--text); border-left-color: var(--border); }
+  .toc-link.active {
+    color: var(--amber);
+    border-left-color: var(--amber);
+    background: linear-gradient(90deg, rgba(245,165,36,0.08), transparent);
+  }
+
+  /* Step number chip */
+  .step-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  /* Code block wrapper */
+  .code-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #0f0f13;
+    margin: 0;
+  }
+  .code-wrap pre { margin: 0 !important; padding: 1.25rem 1.25rem 1.25rem 1.25rem !important; background: transparent !important; font-size: 0.8125rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-wrap pre code { background: transparent !important; font-family: 'JetBrains Mono', monospace !important; }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.85rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .copy-btn:hover { color: var(--amber); border-color: var(--amber); }
+  .copy-btn.copied { color: var(--teal); border-color: var(--teal); }
+
+  /* Language tabs */
+  .lang-tabs {
+    display: flex; gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 0 0;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .lang-tab {
+    padding: 0.6rem 1.1rem;
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+    transition: all 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  .lang-tab:last-child { border-right: none; }
+  .lang-tab:hover { color: var(--text); background: var(--surface-2); }
+  .lang-tab.active {
+    color: var(--amber);
+    background: #0f0f13;
+    box-shadow: inset 0 -2px 0 var(--amber);
+  }
+  .lang-tabs-wrap .code-wrap { border-top-left-radius: 0; border-top-right-radius: 0; border-top: none; }
+  .lang-pane { display: none; }
+  .lang-pane.active { display: block; }
+
+  /* Callouts */
+  .callout {
+    border-left: 3px solid var(--amber);
+    background: rgba(245,165,36,0.06);
+    padding: 1rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    color: var(--text);
+  }
+  .callout.info  { border-left-color: var(--indigo); background: rgba(139,147,255,0.07); }
+  .callout.warn  { border-left-color: var(--coral);  background: rgba(255,107,74,0.07); }
+  .callout.good  { border-left-color: var(--teal);   background: rgba(79,209,197,0.07); }
+
+  .kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78em;
+    padding: 2px 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--amber-soft);
+  }
+
+  /* Progress bar */
+  #progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--amber), var(--coral));
+    z-index: 50;
+    transition: width 0.1s linear;
+  }
+
+  /* Section heading anchor */
+  h2, h3 { scroll-margin-top: 2rem; }
+
+  /* Prose tweaks inside content */
+  .prose-dark p { color: var(--text); line-height: 1.75; }
+  .prose-dark p + p { margin-top: 1rem; }
+  .prose-dark a { color: var(--amber); text-decoration: underline; text-decoration-color: rgba(245,165,36,0.4); text-underline-offset: 3px; }
+  .prose-dark a:hover { text-decoration-color: var(--amber); }
+  .prose-dark code:not(pre code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    padding: 2px 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--amber-soft);
+  }
+  .prose-dark ul { list-style: none; padding-left: 0; }
+  .prose-dark ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin: 0.4rem 0;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .prose-dark ul li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--amber);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Fancy section divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+    margin: 4rem 0;
+  }
+
+  /* Mobile TOC toggle */
+  @media (max-width: 1024px) {
+    #sidebar { display: none; }
+    #sidebar.open { display: block; position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding: 5rem 1.5rem 2rem; }
+    #mobile-toc-btn { display: inline-flex; }
+  }
+  @media (min-width: 1025px) {
+    #mobile-toc-btn { display: none; }
+  }
+
+  /* Selection */
+  ::selection { background: var(--amber); color: #111; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 8px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+</style>
+</head>
+<body class="antialiased">
+
+<div id="progress-bar"></div>
+
+<!-- Header -->
+<header class="border-b border-[#2a2a33] backdrop-blur-xl bg-[#0b0b0d]/70 sticky top-0 z-30">
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <!-- Logo mark -->
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="15" stroke="#f5a524" stroke-width="1.5"/>
+        <path d="M8 16 L14 22 L24 10" stroke="#f5a524" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16" cy="16" r="4" fill="#ff6b4a" opacity="0.5"/>
+      </svg>
+      <div class="font-mono text-xs text-[#a7a39a] tracking-wider uppercase">
+        The Ingest Handbook
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="hidden sm:inline font-mono text-xs text-[#6b6860]">v9.3.3 · Apr 2026</span>
+      <button id="mobile-toc-btn" class="px-3 py-1.5 border border-[#2a2a33] rounded-md text-xs font-mono text-[#a7a39a] hover:text-[#f5a524] hover:border-[#f5a524]">
+        Contents
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="border-b border-[#2a2a33] overflow-hidden">
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-20 lg:py-28 relative">
+    <div class="max-w-4xl">
+      <div class="flex items-center gap-3 mb-8">
+        <span class="inline-block w-12 h-px bg-[#f5a524]"></span>
+        <span class="font-mono text-xs text-[#f5a524] uppercase tracking-[0.2em]">A practical tutorial</span>
+      </div>
+      <h1 class="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight mb-8">
+        Loading data into<br/>
+        <span class="italic text-[#f5a524]">Elasticsearch</span>,<br/>
+        the right way.
+      </h1>
+      <p class="text-lg md:text-xl text-[#a7a39a] max-w-2xl leading-relaxed">
+        A hands-on guide for developers who are new to Elasticsearch. You'll stand up a cluster with Docker Compose,
+        learn how indexes and mappings actually work, then ingest and search real data from
+        <span class="text-[#ece8dd] font-medium">Java 21</span>,
+        <span class="text-[#ece8dd] font-medium">Go</span>, and
+        <span class="text-[#ece8dd] font-medium">Python</span> — all through small, runnable CLI programs.
+      </p>
+      <div class="mt-10 flex flex-wrap gap-3">
+        <a href="#prereqs" class="px-5 py-2.5 bg-[#f5a524] text-[#111] font-medium rounded-full hover:bg-[#fbbf24] transition text-sm">
+          Start the tutorial →
+        </a>
+        <a href="#best-practices" class="px-5 py-2.5 border border-[#2a2a33] text-[#ece8dd] font-medium rounded-full hover:border-[#f5a524] hover:text-[#f5a524] transition text-sm">
+          Jump to best practices
+        </a>
+      </div>
+
+      <!-- Meta row -->
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-[#2a2a33] pt-10">
+        <div>
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Target Version</div>
+          <div class="font-display text-2xl">9.3.3</div>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Sections</div>
+          <div class="font-display text-2xl">9 steps</div>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Languages</div>
+          <div class="font-display text-2xl">Java · Go · Py</div>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Est. Time</div>
+          <div class="font-display text-2xl">~45 min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main layout -->
+<div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-16 lg:py-20 flex gap-12">
+
+  <!-- Sidebar TOC -->
+  <aside id="sidebar" class="w-64 shrink-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+    <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-4 px-3">On this page</div>
+    <nav id="toc" class="space-y-0.5">
+      <a class="toc-link" href="#prereqs">Prerequisites</a>
+      <a class="toc-link" href="#step-1">01 · Spin up Elasticsearch</a>
+      <a class="toc-link" href="#step-2">02 · Verify the cluster</a>
+      <a class="toc-link" href="#step-3">03 · Core concepts</a>
+      <a class="toc-link" href="#step-4">04 · Design an index</a>
+      <a class="toc-link" href="#step-5">05 · Your first ingest</a>
+      <a class="toc-link" href="#step-6">06 · Bulk ingestion</a>
+      <a class="toc-link" href="#step-7">07 · Searching</a>
+      <a class="toc-link" href="#best-practices">08 · Best practices</a>
+      <a class="toc-link" href="#next">09 · What to learn next</a>
+    </nav>
+    <div class="mt-8 px-3">
+      <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-3">Progress</div>
+      <div class="w-full h-1 bg-[#17171c] rounded-full overflow-hidden">
+        <div id="sidebar-progress" class="h-full bg-gradient-to-r from-[#f5a524] to-[#ff6b4a]" style="width: 0%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="flex-1 min-w-0 prose-dark">
+
+    <!-- Prerequisites -->
+    <section id="prereqs" class="mb-20">
+      <div class="flex items-baseline gap-4 mb-6">
+        <div class="font-mono text-xs text-[#6b6860] uppercase tracking-widest">Prerequisites</div>
+        <div class="flex-1 h-px bg-[#2a2a33]"></div>
+      </div>
+      <h2 class="font-display text-4xl md:text-5xl leading-tight mb-6">Before you begin</h2>
+      <p class="text-lg text-[#a7a39a] mb-6">
+        You don't need to know Elasticsearch — that's what this tutorial is for. But you do need a few tools installed
+        locally. Every example in this guide assumes the following are on your <code>PATH</code>:
+      </p>
+      <ul>
+        <li><strong>Docker &amp; Docker Compose</strong> — for running Elasticsearch in a container (Compose v2 plugin is fine)</li>
+        <li><strong>Java 21</strong> — any LTS distribution (Temurin, Zulu, Corretto). Verify with <code>java --version</code></li>
+        <li><strong>Go 1.22+</strong> — verify with <code>go version</code></li>
+        <li><strong>Python 3.11+</strong> — verify with <code>python3 --version</code></li>
+        <li><strong><code>curl</code></strong> — we'll poke the REST API directly from the shell</li>
+      </ul>
+      <div class="callout info mt-8">
+        <strong>About versions.</strong> This tutorial targets Elasticsearch <code>9.3.3</code> (the latest stable release as of
+        April 2026). The official clients for each language are versioned to match: <code>elasticsearch-java 9.x</code>,
+        <code>go-elasticsearch/v9</code>, and <code>elasticsearch-py 9.x</code>. Always match your client's major
+        version to your cluster's.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 1 -->
+    <section id="step-1" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">01</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step One</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Spin up Elasticsearch with Docker Compose</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        The fastest way to get a working cluster on your laptop is Docker Compose. Create a new project folder,
+        then save the following as <code>docker-compose.yml</code>:
+      </p>
+
+      <div class="code-wrap mb-6">
+        <div class="code-header">
+          <span>docker-compose.yml</span>
+          <button class="copy-btn" data-copy-target="code-compose">Copy</button>
+        </div>
+<pre><code id="code-compose" class="language-yaml">services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.3
+    container_name: es-tutorial
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false          # dev only — see note below
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - cluster.name=ingest-handbook
+      - node.name=es01
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.3.3
+    container_name: kibana-tutorial
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+volumes:
+  es-data:
+</code></pre>
+      </div>
+
+      <p>Now bring it up:</p>
+
+      <div class="code-wrap mb-6">
+        <div class="code-header">
+          <span>shell</span>
+          <button class="copy-btn" data-copy-target="code-compose-up">Copy</button>
+        </div>
+<pre><code id="code-compose-up" class="language-bash">docker compose up -d
+docker compose ps</code></pre>
+      </div>
+
+      <div class="callout warn">
+        <strong>Security is off on purpose — for local dev only.</strong> In any shared or production environment you
+        must enable <code>xpack.security</code>, configure TLS, and create a real user with scoped roles. We disable
+        it here to keep the tutorial free of auth plumbing, but the clients below include notes on how to add
+        credentials when you're ready.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 2 -->
+    <section id="step-2" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">02</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Two</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Verify the cluster is alive</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Before writing a single line of application code, confirm the cluster responds. Two endpoints matter:
+        the root (banner + version) and <code>_cluster/health</code>.
+      </p>
+
+      <div class="code-wrap mb-6">
+        <div class="code-header">
+          <span>shell</span>
+          <button class="copy-btn" data-copy-target="code-health">Copy</button>
+        </div>
+<pre><code id="code-health" class="language-bash">curl -s http://localhost:9200 | jq .
+curl -s http://localhost:9200/_cluster/health | jq .</code></pre>
+      </div>
+
+      <p>You should see a JSON blob that includes a <code>version.number</code> of <code>9.3.3</code> and a cluster
+      status of <code>green</code> (single-node clusters with no replicas are green by default).</p>
+
+      <div class="callout good">
+        <strong>Three cluster statuses you'll see:</strong>
+        <span class="inline-block ml-2 px-2 py-0.5 rounded bg-[#17171c] border border-[#2a2a33] font-mono text-xs text-[#4fd1c5]">green</span> — all primary &amp; replica shards active.
+        <span class="inline-block ml-2 px-2 py-0.5 rounded bg-[#17171c] border border-[#2a2a33] font-mono text-xs text-[#fbbf24]">yellow</span> — primaries active, some replicas missing (normal on dev).
+        <span class="inline-block ml-2 px-2 py-0.5 rounded bg-[#17171c] border border-[#2a2a33] font-mono text-xs text-[#ff6b4a]">red</span> — at least one primary shard is unavailable. Something is wrong.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 3 -->
+    <section id="step-3" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">03</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Three</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Indexes, documents, shards, mappings</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Don't skip this. If these four words don't click, the rest of Elasticsearch feels like magic — and magic
+        is what causes bad production incidents at 3 a.m.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-5 my-8">
+        <div class="p-6 rounded-xl border border-[#2a2a33] bg-[#17171c]/50">
+          <div class="font-mono text-xs text-[#f5a524] mb-2 uppercase tracking-wider">Index</div>
+          <p class="text-[#ece8dd] leading-relaxed">A logical collection of similar documents. Roughly analogous to a
+          table in a relational database — but much more flexible about what "a row" can look like.</p>
+        </div>
+        <div class="p-6 rounded-xl border border-[#2a2a33] bg-[#17171c]/50">
+          <div class="font-mono text-xs text-[#f5a524] mb-2 uppercase tracking-wider">Document</div>
+          <p class="text-[#ece8dd] leading-relaxed">A JSON object stored in an index. Every document has a unique
+          <code>_id</code> (auto-generated if you don't supply one) and is internally indexed into an inverted index.</p>
+        </div>
+        <div class="p-6 rounded-xl border border-[#2a2a33] bg-[#17171c]/50">
+          <div class="font-mono text-xs text-[#f5a524] mb-2 uppercase tracking-wider">Shard</div>
+          <p class="text-[#ece8dd] leading-relaxed">A physical unit of storage. Each index is split across one or more
+          primary shards, each of which can have replicas. Shards are Lucene indexes under the hood.</p>
+        </div>
+        <div class="p-6 rounded-xl border border-[#2a2a33] bg-[#17171c]/50">
+          <div class="font-mono text-xs text-[#f5a524] mb-2 uppercase tracking-wider">Mapping</div>
+          <p class="text-[#ece8dd] leading-relaxed">The schema. It tells Elasticsearch how each field in your document
+          should be indexed: as full-text, a keyword, a number, a date, a geo-point, a vector, etc.</p>
+        </div>
+      </div>
+
+      <p>The <strong>mapping</strong> is the single most consequential decision you make. Elasticsearch will happily
+      infer one for you the first time you index a document (this is called <em>dynamic mapping</em>), but the
+      result is often wrong — e.g., strings defaulting to both <code>text</code> <em>and</em> <code>keyword</code>,
+      which doubles your storage for no reason. Pros always declare mappings explicitly.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 4 -->
+    <section id="step-4" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">04</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Four</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Design and create the index</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Our example dataset will be a catalog of books. Each book has a title (searchable full-text), an author name
+        (often searched as an exact value), a publish date, a price, a list of tags, and a short description.
+      </p>
+
+      <p>We'll create the index <code>books</code> with an explicit mapping. Run this against the cluster:</p>
+
+      <div class="code-wrap mb-6">
+        <div class="code-header">
+          <span>shell — create index with mapping</span>
+          <button class="copy-btn" data-copy-target="code-mapping">Copy</button>
+        </div>
+<pre><code id="code-mapping" class="language-bash">curl -X PUT http://localhost:9200/books \
+  -H "Content-Type: application/json" \
+  -d '{
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "refresh_interval": "1s",
+      "analysis": {
+        "analyzer": {
+          "english_folded": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "asciifolding", "english_stop", "english_stemmer"]
+          }
+        },
+        "filter": {
+          "english_stop":    { "type": "stop",     "stopwords": "_english_" },
+          "english_stemmer": { "type": "stemmer",  "language": "english"  }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "title":       { "type": "text", "analyzer": "english_folded",
+                         "fields": { "raw": { "type": "keyword" } } },
+        "author":      { "type": "keyword" },
+        "description": { "type": "text", "analyzer": "english_folded" },
+        "tags":        { "type": "keyword" },
+        "price":       { "type": "scaled_float", "scaling_factor": 100 },
+        "published":   { "type": "date", "format": "strict_date_optional_time" },
+        "in_stock":    { "type": "boolean" },
+        "ingested_at": { "type": "date" }
+      }
+    }
+  }'</code></pre>
+      </div>
+
+      <p>A lot is happening here. The table below explains every choice:</p>
+
+      <div class="overflow-x-auto my-6 border border-[#2a2a33] rounded-xl">
+        <table class="w-full text-sm">
+          <thead class="bg-[#17171c] border-b border-[#2a2a33]">
+            <tr class="text-left">
+              <th class="p-3 font-mono text-xs text-[#f5a524] uppercase tracking-wider">Field</th>
+              <th class="p-3 font-mono text-xs text-[#f5a524] uppercase tracking-wider">Type</th>
+              <th class="p-3 font-mono text-xs text-[#f5a524] uppercase tracking-wider">Why</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#2a2a33]">
+            <tr><td class="p-3 font-mono text-xs">title</td><td class="p-3 font-mono text-xs text-[#8b93ff]">text + keyword</td><td class="p-3 text-[#a7a39a]">Full-text search on the stemmed form, exact match / sorting via <code>title.raw</code></td></tr>
+            <tr><td class="p-3 font-mono text-xs">author</td><td class="p-3 font-mono text-xs text-[#8b93ff]">keyword</td><td class="p-3 text-[#a7a39a]">Exact-match filter, aggregate by author — no tokenizing needed</td></tr>
+            <tr><td class="p-3 font-mono text-xs">description</td><td class="p-3 font-mono text-xs text-[#8b93ff]">text</td><td class="p-3 text-[#a7a39a]">Searchable prose; no keyword sub-field needed</td></tr>
+            <tr><td class="p-3 font-mono text-xs">tags</td><td class="p-3 font-mono text-xs text-[#8b93ff]">keyword</td><td class="p-3 text-[#a7a39a]">Array of exact values for filtering &amp; facets</td></tr>
+            <tr><td class="p-3 font-mono text-xs">price</td><td class="p-3 font-mono text-xs text-[#8b93ff]">scaled_float</td><td class="p-3 text-[#a7a39a]">Cheaper than <code>double</code> when you only need 2 decimal places</td></tr>
+            <tr><td class="p-3 font-mono text-xs">published</td><td class="p-3 font-mono text-xs text-[#8b93ff]">date</td><td class="p-3 text-[#a7a39a]">ISO-8601 strings; supports range queries &amp; date math</td></tr>
+            <tr><td class="p-3 font-mono text-xs">ingested_at</td><td class="p-3 font-mono text-xs text-[#8b93ff]">date</td><td class="p-3 text-[#a7a39a]"><strong>Metadata</strong> field — we'll set this on the client side</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <strong>Why <code>"dynamic": "strict"</code>?</strong> Because it rejects any document with a field you didn't
+        declare. That single setting prevents an entire category of production pain: a misspelled field name
+        silently creating a new mapping, bloating your index, and poisoning aggregations. Turn it on early.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 5 -->
+    <section id="step-5" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">05</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Five</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Your first ingest from an app</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Time to index a document from real code. Pick your language below — each example is a complete, runnable CLI
+        program that indexes one book and prints the response.
+      </p>
+
+      <!-- Language tabs : first ingest -->
+      <div class="lang-tabs-wrap mb-6" data-lang-group="first">
+        <div class="lang-tabs">
+          <button class="lang-tab active" data-lang="java">Java 21</button>
+          <button class="lang-tab" data-lang="go">Go</button>
+          <button class="lang-tab" data-lang="python">Python</button>
+        </div>
+
+        <!-- Java -->
+        <div class="lang-pane active" data-lang="java">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>pom.xml — dependencies (excerpt)</span>
+              <button class="copy-btn" data-copy-target="code-java-pom">Copy</button>
+            </div>
+<pre><code id="code-java-pom" class="language-java">&lt;properties&gt;
+  &lt;maven.compiler.release&gt;21&lt;/maven.compiler.release&gt;
+  &lt;es.version&gt;9.3.0&lt;/es.version&gt;
+&lt;/properties&gt;
+
+&lt;dependencies&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;co.elastic.clients&lt;/groupId&gt;
+    &lt;artifactId&gt;elasticsearch-java&lt;/artifactId&gt;
+    &lt;version&gt;${es.version}&lt;/version&gt;
+  &lt;/dependency&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;
+    &lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;
+    &lt;version&gt;2.17.2&lt;/version&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>IndexOneBook.java</span>
+              <button class="copy-btn" data-copy-target="code-java-one">Copy</button>
+            </div>
+<pre><code id="code-java-one" class="language-java">package com.example;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+
+public class IndexOneBook {
+
+  // Using a Java 21 record for conciseness and immutability.
+  public record Book(
+      String title,
+      String author,
+      String description,
+      List&lt;String&gt; tags,
+      double price,
+      LocalDate published,
+      boolean in_stock,
+      Instant ingested_at
+  ) {}
+
+  public static void main(String[] args) throws Exception {
+    var restClient = RestClient
+        .builder(new HttpHost("localhost", 9200, "http"))
+        .build();
+
+    var transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+    var es = new ElasticsearchClient(transport);
+
+    var book = new Book(
+        "The Pragmatic Programmer",
+        "Andy Hunt",
+        "Classic guide to software craftsmanship.",
+        List.of("software", "engineering", "career"),
+        39.95,
+        LocalDate.of(1999, 10, 20),
+        true,
+        Instant.now()
+    );
+
+    IndexResponse resp = es.index(i -&gt; i
+        .index("books")
+        .id("pragprog-1")      // stable business id — idempotent ingest
+        .document(book)
+    );
+
+    System.out.println("Indexed: " + resp.id() + " result=" + resp.result()
+        + " version=" + resp.version());
+
+    transport.close();
+    restClient.close();
+  }
+}</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>run</span>
+              <button class="copy-btn" data-copy-target="code-java-run">Copy</button>
+            </div>
+<pre><code id="code-java-run" class="language-bash">mvn compile exec:java -Dexec.mainClass=com.example.IndexOneBook</code></pre>
+          </div>
+        </div>
+
+        <!-- Go -->
+        <div class="lang-pane" data-lang="go">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>go.mod</span>
+              <button class="copy-btn" data-copy-target="code-go-mod">Copy</button>
+            </div>
+<pre><code id="code-go-mod" class="language-go">module example.com/books
+
+go 1.22
+
+require github.com/elastic/go-elasticsearch/v9 v9.3.0</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>cmd/index-one/main.go</span>
+              <button class="copy-btn" data-copy-target="code-go-one">Copy</button>
+            </div>
+<pre><code id="code-go-one" class="language-go">package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/esapi"
+)
+
+type Book struct {
+	Title       string    `json:"title"`
+	Author      string    `json:"author"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags"`
+	Price       float64   `json:"price"`
+	Published   string    `json:"published"` // YYYY-MM-DD
+	InStock     bool      `json:"in_stock"`
+	IngestedAt  time.Time `json:"ingested_at"`
+}
+
+func main() {
+	cfg := elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+		// Username / Password / CACert go here once you enable security.
+	}
+	es, err := elasticsearch.NewClient(cfg)
+	if err != nil {
+		log.Fatalf("client: %s", err)
+	}
+
+	book := Book{
+		Title:       "The Pragmatic Programmer",
+		Author:      "Andy Hunt",
+		Description: "Classic guide to software craftsmanship.",
+		Tags:        []string{"software", "engineering", "career"},
+		Price:       39.95,
+		Published:   "1999-10-20",
+		InStock:     true,
+		IngestedAt:  time.Now().UTC(),
+	}
+
+	body, _ := json.Marshal(book)
+	req := esapi.IndexRequest{
+		Index:      "books",
+		DocumentID: "pragprog-1",
+		Body:       bytes.NewReader(body),
+		Refresh:    "false",
+	}
+
+	res, err := req.Do(context.Background(), es)
+	if err != nil {
+		log.Fatalf("index: %s", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		log.Fatalf("error: %s", res.String())
+	}
+
+	var r map[string]any
+	_ = json.NewDecoder(res.Body).Decode(&r)
+	log.Printf("indexed: id=%s result=%s version=%v",
+		r["_id"], r["result"], r["_version"])
+	// strings import kept for completeness in larger programs:
+	_ = strings.TrimSpace
+}</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>run</span>
+              <button class="copy-btn" data-copy-target="code-go-run">Copy</button>
+            </div>
+<pre><code id="code-go-run" class="language-bash">go run ./cmd/index-one</code></pre>
+          </div>
+        </div>
+
+        <!-- Python -->
+        <div class="lang-pane" data-lang="python">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>requirements.txt</span>
+              <button class="copy-btn" data-copy-target="code-py-req">Copy</button>
+            </div>
+<pre><code id="code-py-req" class="language-python">elasticsearch==9.3.0</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>index_one.py</span>
+              <button class="copy-btn" data-copy-target="code-py-one">Copy</button>
+            </div>
+<pre><code id="code-py-one" class="language-python">from datetime import datetime, timezone
+from elasticsearch import Elasticsearch
+
+# When security is enabled, pass basic_auth=("elastic", "yourpw")
+# and ca_certs="/path/to/http_ca.crt".
+es = Elasticsearch("http://localhost:9200")
+
+book = {
+    "title":       "The Pragmatic Programmer",
+    "author":      "Andy Hunt",
+    "description": "Classic guide to software craftsmanship.",
+    "tags":        ["software", "engineering", "career"],
+    "price":       39.95,
+    "published":   "1999-10-20",
+    "in_stock":    True,
+    "ingested_at": datetime.now(timezone.utc).isoformat(),
+}
+
+resp = es.index(
+    index="books",
+    id="pragprog-1",      # stable id = idempotent ingest
+    document=book,
+)
+
+print(f"indexed: id={resp['_id']} result={resp['result']} version={resp['_version']}")
+</code></pre>
+          </div>
+          <div class="code-wrap mt-4">
+            <div class="code-header">
+              <span>run</span>
+              <button class="copy-btn" data-copy-target="code-py-run">Copy</button>
+            </div>
+<pre><code id="code-py-run" class="language-bash">python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python index_one.py</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>Supply your own <code>_id</code> whenever you can.</strong> Using a stable business key (ISBN, UUID, primary-key from your
+        source system) makes ingest <em>idempotent</em>: re-running your pipeline updates the same document instead of
+        creating a new one. Auto-generated ids are fine for event streams, but terrible for catalog-style data.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 6 -->
+    <section id="step-6" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">06</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Six</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Bulk ingestion — the fast path</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Indexing documents one-at-a-time is convenient but it will never keep up with real data volumes. The
+        <code>_bulk</code> API accepts many operations in a single request. On a laptop the difference between
+        single-doc and bulk ingest is commonly <strong>50–100× throughput</strong>.
+      </p>
+
+      <p>All three official clients ship a helper so you don't have to hand-roll the NDJSON format yourself.
+      The rule of thumb: batches of <strong>1,000–5,000 documents</strong> or <strong>5–15 MB per request</strong>,
+      whichever comes first. Bigger isn't better — giant bulk requests just create GC pressure and time-outs.</p>
+
+      <!-- Language tabs : bulk -->
+      <div class="lang-tabs-wrap mb-6" data-lang-group="bulk">
+        <div class="lang-tabs">
+          <button class="lang-tab active" data-lang="java">Java 21</button>
+          <button class="lang-tab" data-lang="go">Go</button>
+          <button class="lang-tab" data-lang="python">Python</button>
+        </div>
+
+        <!-- Java Bulk -->
+        <div class="lang-pane active" data-lang="java">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>BulkIndexBooks.java — using the BulkIngester helper</span>
+              <button class="copy-btn" data-copy-target="code-java-bulk">Copy</button>
+            </div>
+<pre><code id="code-java-bulk" class="language-java">package com.example;
+
+import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkIngester;
+import co.elastic.clients.elasticsearch._helpers.bulk.BulkListener;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+
+public class BulkIndexBooks {
+
+  public record Book(String title, String author, String description,
+                     List&lt;String&gt; tags, double price, LocalDate published,
+                     boolean in_stock, Instant ingested_at) {}
+
+  public static void main(String[] args) throws Exception {
+    var restClient = RestClient.builder(new HttpHost("localhost", 9200, "http")).build();
+    var transport  = new RestClientTransport(restClient, new JacksonJsonpMapper());
+    var es         = new ElasticsearchAsyncClient(transport);
+
+    // BulkIngester batches automatically by size, count, or time window.
+    try (BulkIngester&lt;String&gt; ingester = BulkIngester.of(b -&gt; b
+        .client(es)
+        .maxOperations(1_000)             // flush every 1k ops
+        .maxSize(5L * 1024 * 1024)        // or every 5 MB
+        .flushInterval(2, java.util.concurrent.TimeUnit.SECONDS)
+        .listener(new BulkListener&lt;String&gt;() {
+          public void beforeBulk(long id, co.elastic.clients.elasticsearch.core.BulkRequest r,
+                                 List&lt;String&gt; ctx) {}
+          public void afterBulk(long id, co.elastic.clients.elasticsearch.core.BulkRequest r,
+                                List&lt;String&gt; ctx,
+                                co.elastic.clients.elasticsearch.core.BulkResponse resp) {
+            if (resp.errors()) System.err.println("bulk had failures: " + resp.items().size());
+          }
+          public void afterBulk(long id, co.elastic.clients.elasticsearch.core.BulkRequest r,
+                                List&lt;String&gt; ctx, Throwable t) { t.printStackTrace(); }
+        })
+    )) {
+      for (int i = 0; i &lt; 10_000; i++) {
+        String id = "book-" + i;
+        Book doc  = new Book(
+            "Generated Title " + i,
+            "Author " + (i % 50),
+            "Description for book " + i,
+            List.of("generated", "batch-" + (i / 1000)),
+            9.99 + (i % 40),
+            LocalDate.now().minusDays(i),
+            i % 2 == 0,
+            Instant.now()
+        );
+        ingester.add(op -&gt; op.index(idx -&gt; idx.index("books").id(id).document(doc)), id);
+      }
+    } // auto-close flushes remaining ops
+
+    System.out.println("done.");
+    transport.close();
+    restClient.close();
+  }
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- Go Bulk -->
+        <div class="lang-pane" data-lang="go">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>cmd/index-bulk/main.go — using esutil.BulkIndexer</span>
+              <button class="copy-btn" data-copy-target="code-go-bulk">Copy</button>
+            </div>
+<pre><code id="code-go-bulk" class="language-go">package main
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"strings"
+	"sync/atomic"
+	"time"
+
+	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/esutil"
+)
+
+type Book struct {
+	Title       string    `json:"title"`
+	Author      string    `json:"author"`
+	Description string    `json:"description"`
+	Tags        []string  `json:"tags"`
+	Price       float64   `json:"price"`
+	Published   string    `json:"published"`
+	InStock     bool      `json:"in_stock"`
+	IngestedAt  time.Time `json:"ingested_at"`
+}
+
+func main() {
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+	})
+	if err != nil {
+		log.Fatalf("client: %s", err)
+	}
+
+	bi, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Client:        es,
+		Index:         "books",
+		NumWorkers:    4,                 // tune to your CPU / cluster
+		FlushBytes:    5_000_000,         // 5 MB
+		FlushInterval: 2 * time.Second,
+	})
+	if err != nil {
+		log.Fatalf("bulk indexer: %s", err)
+	}
+
+	var indexed, failed uint64
+	start := time.Now()
+
+	for i := 0; i < 10_000; i++ {
+		book := Book{
+			Title:       fmt.Sprintf("Generated Title %d", i),
+			Author:      fmt.Sprintf("Author %d", i%50),
+			Description: fmt.Sprintf("Description for book %d", i),
+			Tags:        []string{"generated", fmt.Sprintf("batch-%d", i/1000)},
+			Price:       9.99 + float64(i%40),
+			Published:   time.Now().AddDate(0, 0, -i).Format("2006-01-02"),
+			InStock:     i%2 == 0,
+			IngestedAt:  time.Now().UTC(),
+		}
+
+		body, _ := json.Marshal(book)
+		err := bi.Add(context.Background(), esutil.BulkIndexerItem{
+			Action:     "index",
+			DocumentID: fmt.Sprintf("book-%d", i),
+			Body:       bytes.NewReader(body),
+			OnSuccess: func(_ context.Context, _ esutil.BulkIndexerItem, _ esutil.BulkIndexerResponseItem) {
+				atomic.AddUint64(&indexed, 1)
+			},
+			OnFailure: func(_ context.Context, _ esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem, err error) {
+				atomic.AddUint64(&failed, 1)
+				if err != nil {
+					log.Printf("err: %s", err)
+				} else {
+					log.Printf("fail: %s: %s", res.Error.Type, res.Error.Reason)
+				}
+			},
+		})
+		if err != nil {
+			log.Printf("add: %s", err)
+		}
+	}
+
+	if err := bi.Close(context.Background()); err != nil {
+		log.Fatalf("close: %s", err)
+	}
+
+	log.Printf("indexed=%d failed=%d elapsed=%s",
+		indexed, failed, time.Since(start).Round(time.Millisecond))
+	_ = strings.TrimSpace
+}</code></pre>
+          </div>
+        </div>
+
+        <!-- Python Bulk -->
+        <div class="lang-pane" data-lang="python">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>index_bulk.py — using elasticsearch.helpers.bulk</span>
+              <button class="copy-btn" data-copy-target="code-py-bulk">Copy</button>
+            </div>
+<pre><code id="code-py-bulk" class="language-python">from datetime import datetime, timedelta, timezone
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
+
+es = Elasticsearch("http://localhost:9200")
+
+def generate():
+    now = datetime.now(timezone.utc)
+    for i in range(10_000):
+        yield {
+            "_op_type": "index",
+            "_index":   "books",
+            "_id":      f"book-{i}",
+            "_source": {
+                "title":       f"Generated Title {i}",
+                "author":      f"Author {i % 50}",
+                "description": f"Description for book {i}",
+                "tags":        ["generated", f"batch-{i // 1000}"],
+                "price":       9.99 + (i % 40),
+                "published":   (now - timedelta(days=i)).date().isoformat(),
+                "in_stock":    i % 2 == 0,
+                "ingested_at": now.isoformat(),
+            },
+        }
+
+# chunk_size  -> docs per bulk request
+# max_chunk_bytes -> upper bound per request (default 100MB; bring it DOWN)
+# request_timeout -> don't let slow batches hang forever
+success, errors = bulk(
+    es,
+    generate(),
+    chunk_size=1_000,
+    max_chunk_bytes=5 * 1024 * 1024,
+    request_timeout=60,
+    raise_on_error=False,
+)
+
+print(f"indexed={success} errors={len(errors) if isinstance(errors, list) else errors}")
+</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>Partial failures are normal.</strong> A 200 OK from <code>_bulk</code> does <em>not</em> mean every
+        item succeeded. The response body has a per-item status, and you must inspect it. The helpers above expose
+        <code>OnFailure</code> / <code>errors</code> callbacks for exactly this reason. Log failed <code>_id</code>s
+        and re-queue them — don't just swallow the error.
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Step 7 -->
+    <section id="step-7" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">07</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Seven</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Searching what you ingested</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-6">
+        Ingestion without a search story is just an expensive database. Let's run the two query shapes you'll reach
+        for most often: full-text <code>match</code> on prose, and filtered <code>bool</code> queries that combine
+        exact-match <em>filters</em> with scored <em>musts</em>.
+      </p>
+
+      <p>First, with plain curl so you can see the wire format:</p>
+
+      <div class="code-wrap mb-6">
+        <div class="code-header">
+          <span>shell — a filtered full-text query</span>
+          <button class="copy-btn" data-copy-target="code-query">Copy</button>
+        </div>
+<pre><code id="code-query" class="language-bash">curl -X GET http://localhost:9200/books/_search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 10,
+    "query": {
+      "bool": {
+        "must":   [ { "match": { "description": "programmer craftsmanship" } } ],
+        "filter": [
+          { "term":  { "in_stock": true } },
+          { "terms": { "tags": ["software", "engineering"] } },
+          { "range": { "price": { "lte": 50 } } }
+        ]
+      }
+    },
+    "sort": [ { "_score": "desc" }, { "published": "desc" } ],
+    "_source": ["title", "author", "price", "published"]
+  }'</code></pre>
+      </div>
+
+      <p class="mb-4"><strong>Two things to internalize about that query:</strong></p>
+      <ul class="mb-6">
+        <li><code>must</code> clauses contribute to <em>relevance score</em>. Use them for the user's search terms.</li>
+        <li><code>filter</code> clauses are yes/no. They don't score, they're aggressively cached, and they're dramatically
+        faster. <strong>Anything that doesn't need to affect relevance belongs in <code>filter</code>.</strong></li>
+      </ul>
+
+      <p>And the same query from each client:</p>
+
+      <!-- Language tabs : search -->
+      <div class="lang-tabs-wrap mb-6" data-lang-group="search">
+        <div class="lang-tabs">
+          <button class="lang-tab active" data-lang="java">Java 21</button>
+          <button class="lang-tab" data-lang="go">Go</button>
+          <button class="lang-tab" data-lang="python">Python</button>
+        </div>
+
+        <div class="lang-pane active" data-lang="java">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>SearchBooks.java</span>
+              <button class="copy-btn" data-copy-target="code-java-search">Copy</button>
+            </div>
+<pre><code id="code-java-search" class="language-java">var response = es.search(s -&gt; s
+    .index("books")
+    .size(10)
+    .query(q -&gt; q.bool(b -&gt; b
+        .must(m -&gt; m.match(t -&gt; t.field("description").query("programmer craftsmanship")))
+        .filter(f -&gt; f.term(t -&gt; t.field("in_stock").value(true)))
+        .filter(f -&gt; f.terms(t -&gt; t.field("tags")
+            .terms(v -&gt; v.value(List.of("software", "engineering").stream()
+                .map(co.elastic.clients.elasticsearch._types.FieldValue::of).toList()))))
+        .filter(f -&gt; f.range(r -&gt; r.number(n -&gt; n.field("price").lte(50.0))))
+    ))
+    .sort(so -&gt; so.score(sc -&gt; sc.order(co.elastic.clients.elasticsearch._types.SortOrder.Desc)))
+    , Book.class);
+
+response.hits().hits().forEach(h -&gt;
+    System.out.printf("%.3f  %s — %s%n", h.score(), h.source().title(), h.source().author()));</code></pre>
+          </div>
+        </div>
+
+        <div class="lang-pane" data-lang="go">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>cmd/search/main.go — using typed API</span>
+              <button class="copy-btn" data-copy-target="code-go-search">Copy</button>
+            </div>
+<pre><code id="code-go-search" class="language-go">package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+
+	"github.com/elastic/go-elasticsearch/v9"
+	"github.com/elastic/go-elasticsearch/v9/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v9/typedapi/types"
+)
+
+func main() {
+	es, err := elasticsearch.NewTypedClient(elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+	})
+	if err != nil {
+		log.Fatalf("client: %s", err)
+	}
+
+	descQuery := "programmer craftsmanship"
+	maxPrice  := types.Float64(50.0)
+	inStock   := true
+
+	res, err := es.Search().Index("books").Request(&search.Request{
+		Size: ptrInt(10),
+		Query: &types.Query{
+			Bool: &types.BoolQuery{
+				Must: []types.Query{
+					{Match: map[string]types.MatchQuery{
+						"description": {Query: descQuery},
+					}},
+				},
+				Filter: []types.Query{
+					{Term: map[string]types.TermQuery{
+						"in_stock": {Value: inStock},
+					}},
+					{Terms: &types.TermsQuery{TermsQuery: map[string]types.TermsQueryField{
+						"tags": []string{"software", "engineering"},
+					}}},
+					{Range: map[string]types.RangeQuery{
+						"price": types.NumberRangeQuery{Lte: &maxPrice},
+					}},
+				},
+			},
+		},
+	}).Do(context.Background())
+	if err != nil {
+		log.Fatalf("search: %s", err)
+	}
+
+	for _, hit := range res.Hits.Hits {
+		var src map[string]any
+		_ = json.Unmarshal(hit.Source_, &src)
+		fmt.Printf("%.3f  %v — %v\n", *hit.Score_, src["title"], src["author"])
+	}
+}
+
+func ptrInt(i int) *int { return &i }</code></pre>
+          </div>
+        </div>
+
+        <div class="lang-pane" data-lang="python">
+          <div class="code-wrap">
+            <div class="code-header">
+              <span>search_books.py</span>
+              <button class="copy-btn" data-copy-target="code-py-search">Copy</button>
+            </div>
+<pre><code id="code-py-search" class="language-python">from elasticsearch import Elasticsearch
+
+es = Elasticsearch("http://localhost:9200")
+
+resp = es.search(
+    index="books",
+    size=10,
+    query={
+        "bool": {
+            "must":   [{"match": {"description": "programmer craftsmanship"}}],
+            "filter": [
+                {"term":  {"in_stock": True}},
+                {"terms": {"tags": ["software", "engineering"]}},
+                {"range": {"price": {"lte": 50}}},
+            ],
+        }
+    },
+    sort=[{"_score": "desc"}, {"published": "desc"}],
+    source=["title", "author", "price", "published"],
+)
+
+for hit in resp["hits"]["hits"]:
+    s = hit["_source"]
+    print(f"{hit['_score']:.3f}  {s['title']} — {s['author']}  (${s['price']})")
+</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Best Practices -->
+    <section id="best-practices" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">08</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Eight</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">Best practices that matter in production</h2>
+        </div>
+      </div>
+
+      <p class="text-lg text-[#a7a39a] mb-8">
+        If you remember nothing else from this tutorial, remember these. Each one is a mistake that's
+        expensive to fix after you have real data.
+      </p>
+
+      <div class="space-y-5">
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40" open>
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">01</span>
+              Always declare an explicit mapping
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            Dynamic mapping creates fields at ingest time from what it sees. Every string becomes both
+            <code>text</code> and <code>keyword</code>, every numeric JSON gets guessed (a stray <code>"3"</code>
+            can make your entire field <code>text</code>). That bloats storage, distorts scoring, and breaks
+            aggregations. Set <code>"dynamic": "strict"</code> on anything you own.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">02</span>
+              Know <code class="text-base">text</code> vs <code class="text-base">keyword</code> cold
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            <code>text</code> is analyzed — tokenized, lowercased, stemmed — and used for full-text search.
+            <code>keyword</code> is the raw string, used for exact match, sorting, aggregations, and term-level
+            filters. Most real fields want <em>both</em>, via a multi-field: <code>text</code> at the top,
+            <code>keyword</code> under <code>.raw</code>.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">03</span>
+              Use index templates and aliases from day one
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            Never point your application at a bare index name. Use an <strong>alias</strong> (e.g. <code>books</code>)
+            that points to a concrete index (<code>books-2026.04</code>). When you need to change the mapping — and
+            one day you will — you reindex into <code>books-2026.05</code> and atomically switch the alias. Zero
+            downtime, zero code change.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">04</span>
+              Bake metadata into every document
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            At a minimum, every document should carry <code>ingested_at</code> (when it hit ES),
+            <code>source_id</code> (who produced it), <code>source_version</code> (schema version of the producer),
+            and <code>updated_at</code> (last mutation in the source system). You'll need these for debugging,
+            replaying ingest, partial reindexing, and proving freshness to stakeholders. Add the fields to the
+            mapping; set them in the client — never rely on ingest pipelines alone.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">05</span>
+              Filter, don't must
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            If a clause doesn't contribute to relevance — booleans, IDs, dates, status enums, tenant IDs — put it
+            in the <code>filter</code> array, not <code>must</code>. Filters skip scoring and get cached at the
+            segment level. On a busy cluster this one change can move your p99 latency by an order of magnitude.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">06</span>
+              Right-size your shards
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            Target <strong>10–50 GB per primary shard</strong> for search-heavy indexes, and up to 30 GB for
+            log/observability indexes. Too many small shards overwhelms the cluster's bookkeeping; too few huge shards
+            hurts query parallelism and rebalancing. Start with <code>number_of_shards: 1</code> for small indexes
+            and grow via reindex — don't guess 10 because it looks round.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">07</span>
+              Tune <code class="text-base">refresh_interval</code> for bulk loads
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            The default <code>refresh_interval</code> is <code>1s</code> — every second, ES makes new docs searchable,
+            which costs I/O. During an initial backfill, set it to <code>-1</code> (disabled) and
+            <code>number_of_replicas: 0</code>, ingest, then turn them back on. You'll often cut load time in half
+            or more.
+          </div>
+        </details>
+
+        <details class="group border border-[#2a2a33] rounded-xl overflow-hidden bg-[#17171c]/40">
+          <summary class="p-5 cursor-pointer flex items-center justify-between hover:bg-[#17171c] transition">
+            <span class="font-display text-xl">
+              <span class="font-mono text-sm text-[#f5a524] mr-3">08</span>
+              Never send plaintext credentials
+            </span>
+            <span class="text-[#f5a524] group-open:rotate-45 transition">+</span>
+          </summary>
+          <div class="px-5 pb-5 text-[#a7a39a] leading-relaxed">
+            The moment you leave localhost: enable security, use HTTPS, create a dedicated role per application
+            with the minimum privileges it needs (usually <code>write</code> on one index pattern and
+            <code>read</code> on another), and pass credentials via API keys or environment variables — never
+            checked into source. Rotate keys.
+          </div>
+        </details>
+
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Next -->
+    <section id="next" class="mb-20">
+      <div class="flex items-start gap-5 mb-6">
+        <span class="step-chip">09</span>
+        <div class="flex-1 pt-1">
+          <div class="font-mono text-[10px] text-[#6b6860] uppercase tracking-widest mb-2">Step Nine</div>
+          <h2 class="font-display text-4xl md:text-5xl leading-tight">What to learn next</h2>
+        </div>
+      </div>
+      <p class="text-lg text-[#a7a39a] mb-8">
+        You now have a working mental model of Elasticsearch, a running cluster, a mapped index, and three ways to
+        push data into it. Pick whichever of these goes next based on what you're building:
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <a href="https://www.elastic.co/docs/reference/elasticsearch/rest-apis/document-apis/bulk" class="block p-5 border border-[#2a2a33] rounded-xl hover:border-[#f5a524] transition group">
+          <div class="font-mono text-xs text-[#f5a524] mb-1">Bulk API reference</div>
+          <div class="font-display text-lg group-hover:text-[#f5a524] transition">Every flag on <code>_bulk</code></div>
+        </a>
+        <a href="https://www.elastic.co/docs/reference/elasticsearch/mapping-reference" class="block p-5 border border-[#2a2a33] rounded-xl hover:border-[#f5a524] transition group">
+          <div class="font-mono text-xs text-[#f5a524] mb-1">Mapping reference</div>
+          <div class="font-display text-lg group-hover:text-[#f5a524] transition">Every field type &amp; parameter</div>
+        </a>
+        <a href="https://www.elastic.co/docs/reference/query-languages/query-dsl" class="block p-5 border border-[#2a2a33] rounded-xl hover:border-[#f5a524] transition group">
+          <div class="font-mono text-xs text-[#f5a524] mb-1">Query DSL</div>
+          <div class="font-display text-lg group-hover:text-[#f5a524] transition">Beyond match &amp; bool</div>
+        </a>
+        <a href="https://www.elastic.co/docs/manage-data/lifecycle/index-lifecycle-management" class="block p-5 border border-[#2a2a33] rounded-xl hover:border-[#f5a524] transition group">
+          <div class="font-mono text-xs text-[#f5a524] mb-1">ILM</div>
+          <div class="font-display text-lg group-hover:text-[#f5a524] transition">Rollover, hot/warm/cold tiers</div>
+        </a>
+      </div>
+
+      <div class="mt-10 p-6 rounded-xl border border-[#2a2a33] bg-gradient-to-br from-[#17171c] to-[#121216]">
+        <div class="font-mono text-xs text-[#f5a524] mb-2 uppercase tracking-wider">Tear down</div>
+        <p class="text-[#a7a39a] mb-3">When you're done experimenting, bring the stack down and reclaim the disk:</p>
+        <div class="code-wrap">
+          <div class="code-header">
+            <span>shell</span>
+            <button class="copy-btn" data-copy-target="code-teardown">Copy</button>
+          </div>
+<pre><code id="code-teardown" class="language-bash">docker compose down -v</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="border-t border-[#2a2a33] mt-20">
+  <div class="max-w-[1400px] mx-auto px-6 lg:px-10 py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <div class="font-display text-xl mb-1">The Ingest Handbook</div>
+      <div class="text-xs text-[#6b6860] font-mono">A practical Elasticsearch tutorial · v9.3.3 · April 2026</div>
+    </div>
+    <div class="text-xs text-[#6b6860] font-mono">
+      Built for developers who prefer working code over abstractions.
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---------- Language tab switching ----------
+  document.querySelectorAll('.lang-tabs-wrap').forEach(group => {
+    const tabs = group.querySelectorAll('.lang-tab');
+    const panes = group.querySelectorAll('.lang-pane');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const lang = tab.dataset.lang;
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.lang === lang));
+        panes.forEach(p => p.classList.toggle('active', p.dataset.lang === lang));
+      });
+    });
+  });
+
+  // ---------- Copy buttons ----------
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.dataset.copyTarget;
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.textContent);
+        const original = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1400);
+      } catch (e) {
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+      }
+    });
+  });
+
+  // ---------- Scroll progress + TOC active state ----------
+  const progressBar = document.getElementById('progress-bar');
+  const sidebarProgress = document.getElementById('sidebar-progress');
+  const tocLinks = document.querySelectorAll('#toc .toc-link');
+  const sections = Array.from(tocLinks).map(link => {
+    const id = link.getAttribute('href').slice(1);
+    return { id, link, el: document.getElementById(id) };
+  }).filter(s => s.el);
+
+  function onScroll() {
+    // Reading progress
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+    progressBar.style.width = pct + '%';
+    if (sidebarProgress) sidebarProgress.style.width = pct + '%';
+
+    // Active TOC link — whichever section's top is closest to 30% of viewport
+    const anchor = window.innerHeight * 0.3;
+    let currentId = sections[0]?.id;
+    for (const s of sections) {
+      const rect = s.el.getBoundingClientRect();
+      if (rect.top <= anchor) currentId = s.id;
+      else break;
+    }
+    tocLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + currentId);
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ---------- Mobile TOC ----------
+  const sidebar = document.getElementById('sidebar');
+  const mobileBtn = document.getElementById('mobile-toc-btn');
+  mobileBtn?.addEventListener('click', () => sidebar.classList.toggle('open'));
+  sidebar?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => sidebar.classList.remove('open')));
+
+  // ---------- Rehighlight code after any DOM tweaks ----------
+  if (window.Prism) Prism.highlightAll();
+</script>
+
+</body>
+</html>
