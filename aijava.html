@@ -3,582 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Java 21 Builder Pattern —  Developer Tutorial</title>
+<title>Java 21 Enterprise Patterns — Demo Developer</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ibm-blue-60: #0f62fe;
-    --ibm-blue-70: #0043ce;
-    --ibm-blue-10: #edf5ff;
-    --ibm-blue-20: #d0e2ff;
-    --ibm-blue-40: #78a9ff;
-    --ibm-gray-10: #f4f4f4;
-    --ibm-gray-20: #e0e0e0;
-    --ibm-gray-40: #a8a8a8;
-    --ibm-gray-60: #6f6f6f;
-    --ibm-gray-70: #525252;
-    --ibm-gray-80: #393939;
-    --ibm-gray-90: #262626;
-    --ibm-gray-100: #161616;
-    --ibm-white: #ffffff;
-    --ibm-red-60: #da1e28;
-    --ibm-green-50: #24a148;
-    --ibm-teal-40: #3ddbd9;
-    --ibm-purple-60: #8a3ffc;
-  }
+:root {
+  --blue-60:#0f62fe; --blue-70:#0043ce; --blue-10:#edf5ff; --blue-20:#d0e2ff; --blue-40:#78a9ff;
+  --gray-10:#f4f4f4; --gray-20:#e0e0e0; --gray-40:#a8a8a8; --gray-60:#6f6f6f;
+  --gray-70:#525252; --gray-80:#393939; --gray-90:#262626; --gray-100:#161616;
+  --white:#ffffff; --red-60:#da1e28; --red-10:#fff1f1;
+  --green-50:#24a148; --green-10:#defbe6;
+  --teal-40:#3ddbd9; --purple-60:#8a3ffc; --purple-10:#f6f2ff;
+  --yellow-30:#f1c21b; --yellow-10:#fcf4d6;
+  --orange-40:#ff832b; --orange-10:#fff2e8;
+  --cyan-40:#33b1ff; --cyan-10:#e5f6ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--gray-10);color:var(--gray-100);font-size:14px;line-height:1.6;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── HEADER ─── */
+.site-header{background:var(--gray-100);border-bottom:3px solid var(--blue-60);}
+.header-inner{max-width:1280px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;gap:16px;}
+.header-logo{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--blue-40);letter-spacing:-0.5px;}
+.header-div{width:1px;height:26px;background:var(--gray-80);}
+.header-title{font-size:13px;font-weight:300;color:var(--gray-40);letter-spacing:.4px;}
+.header-badges{margin-left:auto;display:flex;gap:8px;}
+.hbadge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 9px;letter-spacing:1px;}
+.hbadge-blue{background:var(--blue-60);color:#fff;}
+.hbadge-dark{background:var(--gray-80);color:var(--gray-40);}
 
-  body {
-    font-family: 'IBM Plex Sans', sans-serif;
-    background: var(--ibm-gray-10);
-    color: var(--ibm-gray-100);
-    font-size: 14px;
-    line-height: 1.6;
-  }
+/* ─── HERO ─── */
+.hero{background:var(--gray-100);color:#fff;padding:36px 40px;position:relative;overflow:hidden;max-width:1280px;margin:0 auto;}
+.hero::before{content:'';position:absolute;right:-60px;top:-60px;width:280px;height:280px;border:36px solid rgba(15,98,254,.12);border-radius:50%;}
+.hero::after{content:'';position:absolute;right:60px;top:40px;width:140px;height:140px;border:18px solid rgba(15,98,254,.07);border-radius:50%;}
+.hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--blue-40);text-transform:uppercase;margin-bottom:8px;}
+.hero-title{font-size:30px;font-weight:700;line-height:1.2;margin-bottom:8px;}
+.hero-title span{color:var(--blue-40);}
+.hero-desc{font-size:14px;color:var(--gray-40);font-weight:300;max-width:600px;line-height:1.65;}
+.hero-stats{display:flex;gap:36px;margin-top:20px;flex-wrap:wrap;}
+.stat-num{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--blue-40);}
+.stat-lbl{font-size:11px;color:var(--gray-60);text-transform:uppercase;letter-spacing:.8px;}
 
-  /* HEADER */
-  .site-header {
-    background: var(--ibm-gray-100);
-    color: var(--ibm-white);
-    padding: 0;
-    border-bottom: 3px solid var(--ibm-blue-60);
-  }
-  .header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .header-logo {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--ibm-blue-40);
-    letter-spacing: -0.5px;
-    text-transform: uppercase;
-  }
-  .header-divider {
-    width: 1px;
-    height: 28px;
-    background: var(--ibm-gray-70);
-  }
-  .header-title {
-    font-size: 14px;
-    font-weight: 300;
-    color: var(--ibm-gray-40);
-    letter-spacing: 0.5px;
-  }
-  .header-badge {
-    margin-left: auto;
-    background: var(--ibm-blue-60);
-    color: white;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    letter-spacing: 1px;
-  }
+/* ─── MAIN LAYOUT ─── */
+.main-wrap{max-width:1280px;margin:0 auto;padding:28px 32px;display:grid;grid-template-columns:230px 1fr;gap:32px;}
 
-  /* BREADCRUMB */
-  .breadcrumb {
-    background: var(--ibm-white);
-    border-bottom: 1px solid var(--ibm-gray-20);
-    padding: 10px 32px;
-    font-size: 12px;
-    color: var(--ibm-gray-60);
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .breadcrumb span { color: var(--ibm-blue-60); }
+/* ─── SIDEBAR ─── */
+.sidebar{position:sticky;top:20px;height:fit-content;}
+.sb-section{margin-bottom:20px;}
+.sb-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray-60);padding:0 0 6px;border-bottom:1px solid var(--gray-20);margin-bottom:6px;}
+.sb-link{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;color:var(--gray-70);cursor:pointer;border-left:3px solid transparent;transition:all .15s;}
+.sb-link:hover,.sb-link.active{background:var(--blue-10);color:var(--blue-60);border-left-color:var(--blue-60);}
+.sb-link.active{font-weight:500;}
+.sb-dot{width:5px;height:5px;background:var(--blue-60);border-radius:50%;flex-shrink:0;}
+.sb-dot.green{background:var(--green-50);}
+.sb-dot.yellow{background:var(--yellow-30);}
+.sb-dot.purple{background:var(--purple-60);}
+.sb-dot.red{background:var(--red-60);}
+.sb-dot.cyan{background:var(--cyan-40);}
+.sb-dot.orange{background:var(--orange-40);}
 
-  /* MAIN LAYOUT */
-  .main-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 32px;
-    display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 32px;
-  }
+/* ─── CARDS ─── */
+.card{background:var(--white);border:1px solid var(--gray-20);margin-bottom:2px;transition:border-color .2s;}
+.card:hover{border-color:var(--blue-40);}
+.card-header{padding:18px 24px 14px;border-bottom:1px solid var(--gray-20);display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.card-hl{flex:1;}
+.ctag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;margin-bottom:5px;}
+.t-core{background:var(--blue-10);color:var(--blue-60);}
+.t-async{background:var(--yellow-10);color:#b45309;}
+.t-ctrl{background:var(--cyan-10);color:#0072c3;}
+.t-temporal{background:var(--purple-10);color:var(--purple-60);}
+.t-lock{background:var(--red-10);color:var(--red-60);}
+.t-spring{background:var(--green-10);color:var(--green-50);}
+.t-advice{background:var(--orange-10);color:#c44e00;}
+.t-dto{background:var(--cyan-10);color:#0072c3;}
+.t-lombok{background:var(--purple-10);color:var(--purple-60);}
+.t-sim{background:var(--green-10);color:var(--green-50);}
+.t-quiz{background:var(--gray-10);color:var(--gray-70);}
+.card-title{font-size:18px;font-weight:600;color:var(--gray-100);margin-bottom:3px;}
+.card-sub{font-size:12px;color:var(--gray-60);font-weight:300;}
+.card-body{padding:18px 24px;}
+.gap{height:2px;}
 
-  /* SIDEBAR NAV */
-  .sidebar {
-    position: sticky;
-    top: 24px;
-    height: fit-content;
-  }
-  .sidebar-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--ibm-gray-60);
-    padding: 0 0 8px;
-    border-bottom: 1px solid var(--ibm-gray-20);
-    margin-bottom: 8px;
-  }
-  .sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--ibm-gray-70);
-    cursor: pointer;
-    border-left: 3px solid transparent;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-  .sidebar-link:hover {
-    background: var(--ibm-blue-10);
-    color: var(--ibm-blue-60);
-    border-left-color: var(--ibm-blue-60);
-  }
-  .sidebar-link.active {
-    background: var(--ibm-blue-10);
-    color: var(--ibm-blue-60);
-    border-left-color: var(--ibm-blue-60);
-    font-weight: 500;
-  }
-  .sidebar-dot {
-    width: 6px; height: 6px;
-    background: var(--ibm-blue-60);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+/* ─── CODE ─── */
+pre.cb{font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--gray-100);color:#be95ff;padding:18px;overflow-x:auto;line-height:1.75;border-left:4px solid var(--blue-60);margin:10px 0;}
+pre.cb.green{border-left-color:var(--green-50);}
+pre.cb.yellow{border-left-color:var(--yellow-30);}
+pre.cb.purple{border-left-color:var(--purple-60);}
+pre.cb.red{border-left-color:var(--red-60);}
+pre.cb.cyan{border-left-color:var(--cyan-40);}
+pre.cb.orange{border-left-color:var(--orange-40);}
+.kw{color:var(--teal-40);}
+.ty{color:#ff7eb6;}
+.st{color:#42be65;}
+.cm{color:#6f6f6f;font-style:italic;}
+.an{color:#ff832b;}
+.me{color:#78a9ff;}
+.nu{color:#ffd700;}
 
-  /* CONTENT AREA */
-  .content { min-width: 0; }
+/* ─── TEXT HELPERS ─── */
+.desc{font-size:13px;color:var(--gray-70);line-height:1.75;margin-bottom:10px;}
+.desc b{color:var(--gray-100);font-weight:500;}
+code.il{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--gray-10);padding:1px 5px;border:1px solid var(--gray-20);}
 
-  /* SECTION CARDS */
-  .card {
-    background: var(--ibm-white);
-    border: 1px solid var(--ibm-gray-20);
-    margin-bottom: 2px;
-    transition: border-color 0.2s;
-  }
-  .card:hover { border-color: var(--ibm-blue-40); }
-  .card-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--ibm-gray-20);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .card-header-left { flex: 1; }
-  .card-tag {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    margin-bottom: 6px;
-  }
-  .tag-core { background: var(--ibm-blue-10); color: var(--ibm-blue-60); }
-  .tag-validation { background: #fff5f5; color: var(--ibm-red-60); }
-  .tag-lombok { background: #f3e8ff; color: var(--ibm-purple-60); }
-  .tag-simulation { background: #defbe6; color: var(--ibm-green-50); }
-  .tag-quiz { background: var(--ibm-gray-10); color: var(--ibm-gray-70); }
-  .tag-dto { background: #e5f6ff; color: #0072c3; }
+/* ─── GRID ─── */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.dgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0;}
+.dc{background:var(--gray-10);border:1px solid var(--gray-20);padding:12px 14px;}
+.dc-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray-60);margin-bottom:5px;}
+.dc-txt{font-size:12px;color:var(--gray-80);line-height:1.5;}
 
-  .card-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--ibm-gray-100);
-    margin-bottom: 4px;
-  }
-  .card-subtitle {
-    font-size: 13px;
-    color: var(--ibm-gray-60);
-    font-weight: 300;
-  }
-  .card-body { padding: 20px 24px; }
+/* ─── BOXES ─── */
+.key-box{background:var(--blue-10);border-left:4px solid var(--blue-60);padding:11px 15px;font-size:12.5px;color:var(--gray-80);margin-top:10px;}
+.key-box b{color:var(--blue-70);}
+.warn-box{background:var(--red-10);border-left:4px solid var(--red-60);padding:11px 15px;font-size:12.5px;color:var(--gray-80);margin:6px 0;}
+.tip-box{background:var(--green-10);border-left:4px solid var(--green-50);padding:11px 15px;font-size:12.5px;color:var(--gray-80);margin:6px 0;}
+.info-box{background:var(--yellow-10);border-left:4px solid var(--yellow-30);padding:11px 15px;font-size:12.5px;color:var(--gray-80);margin:6px 0;}
 
-  /* CODE BLOCKS */
-  pre.code-block {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12.5px;
-    background: var(--ibm-gray-100);
-    color: #be95ff;
-    padding: 20px;
-    overflow-x: auto;
-    line-height: 1.7;
-    border-left: 4px solid var(--ibm-blue-60);
-    margin: 12px 0;
-  }
-  .code-keyword { color: var(--ibm-teal-40); }
-  .code-type { color: #ff7eb6; }
-  .code-string { color: #42be65; }
-  .code-comment { color: #6f6f6f; font-style: italic; }
-  .code-annotation { color: #ff832b; }
-  .code-method { color: #78a9ff; }
+/* ─── BULLETS ─── */
+.rlist{list-style:none;margin-top:10px;}
+.rlist li{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--gray-20);font-size:12.5px;color:var(--gray-80);}
+.rlist li:last-child{border-bottom:none;}
+.ri{width:17px;height:17px;background:var(--blue-60);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.ri.g{background:var(--green-50);}
+.ri.r{background:var(--red-60);}
+.ri.y{background:#b45309;}
 
-  /* DESCRIPTION TEXT */
-  .desc-text {
-    font-size: 14px;
-    color: var(--ibm-gray-70);
-    line-height: 1.7;
-    margin-bottom: 12px;
-  }
-  .desc-text b { color: var(--ibm-gray-100); font-weight: 500; }
+/* ─── BUTTONS ─── */
+.btn{border:none;padding:9px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;letter-spacing:.3px;}
+.btn-blue{background:var(--blue-60);color:#fff;} .btn-blue:hover{background:var(--blue-70);}
+.btn-ghost{background:transparent;color:var(--blue-60);border:1px solid var(--blue-60);padding:7px 14px;} .btn-ghost:hover{background:var(--blue-10);}
+.btn-green{background:var(--green-50);color:#fff;} .btn-green:hover{background:#1e8a3e;}
 
-  /* BUTTONS */
-  .btn-primary {
-    background: var(--ibm-blue-60);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-    letter-spacing: 0.3px;
-  }
-  .btn-primary:hover { background: var(--ibm-blue-70); }
+/* ─── SIMULATION ─── */
+.sim-in{border:1px solid var(--gray-40);padding:9px 12px;width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;background:var(--white);margin-bottom:7px;transition:border-color .15s;}
+.sim-in:focus{outline:none;border-color:var(--blue-60);box-shadow:0 0 0 2px var(--blue-20);}
+.sim-out{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--gray-100);color:#42be65;padding:14px;min-height:70px;margin-top:10px;line-height:1.7;}
+.s-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray-60);margin-bottom:4px;}
 
-  .btn-ghost {
-    background: transparent;
-    color: var(--ibm-blue-60);
-    border: 1px solid var(--ibm-blue-60);
-    padding: 8px 16px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-ghost:hover { background: var(--ibm-blue-10); }
+/* ─── QUIZ ─── */
+.q-opt{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;border:1px solid var(--gray-20);margin-bottom:7px;cursor:pointer;transition:all .15s;font-size:12.5px;}
+.q-opt:hover{border-color:var(--blue-60);background:var(--blue-10);}
+.q-opt input{accent-color:var(--blue-60);margin-top:2px;}
+.q-res{margin-top:10px;padding:10px 14px;font-size:12.5px;font-weight:500;display:none;}
+.q-ok{background:var(--green-10);color:var(--green-50);border-left:4px solid var(--green-50);}
+.q-no{background:var(--red-10);color:var(--red-60);border-left:4px solid var(--red-60);}
 
-  .btn-green {
-    background: var(--ibm-green-50);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-  }
+/* ─── MODAL ─── */
+.modal{display:none;position:fixed;inset:0;background:rgba(22,22,22,.78);z-index:9999;align-items:center;justify-content:center;padding:20px;}
+.modal.open{display:flex;}
+.mbox{background:var(--white);width:100%;max-width:820px;max-height:90vh;overflow-y:auto;border-top:4px solid var(--blue-60);box-shadow:0 28px 80px rgba(0,0,0,.45);animation:mIn .2s ease;}
+@keyframes mIn{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:translateY(0);}}
+.mhead{background:var(--gray-100);color:#fff;padding:18px 26px;display:flex;align-items:center;justify-content:space-between;}
+.mhead-title{font-size:15px;font-weight:600;}
+.mhead-sub{font-size:11px;color:var(--gray-60);margin-top:2px;}
+.mclose{background:none;border:none;color:var(--gray-40);font-size:24px;cursor:pointer;line-height:1;padding:0 3px;}
+.mclose:hover{color:#fff;}
+.mbody{padding:26px;}
+.msec{margin-bottom:22px;}
+.msec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--blue-60);margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--blue-20);}
+.mtxt{font-size:12.5px;color:var(--gray-70);line-height:1.75;margin-bottom:7px;}
+.mtxt b{color:var(--gray-100);font-weight:500;}
 
-  /* INLINE DETAILS */
-  .detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
-  }
-  .detail-card {
-    background: var(--ibm-gray-10);
-    border: 1px solid var(--ibm-gray-20);
-    padding: 14px 16px;
-  }
-  .detail-card-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--ibm-gray-60);
-    margin-bottom: 6px;
-  }
-  .detail-card-text {
-    font-size: 13px;
-    color: var(--ibm-gray-80);
-    line-height: 1.5;
-  }
+/* ─── TABS ─── */
+.tabs{display:flex;border-bottom:1px solid var(--gray-20);margin-bottom:18px;}
+.tab{padding:9px 16px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;color:var(--gray-60);margin-bottom:-1px;transition:all .15s;}
+.tab.active{color:var(--blue-60);border-bottom-color:var(--blue-60);}
+.tpanel{display:none;} .tpanel.active{display:block;}
 
-  /* KEY THINGS REMEMBER */
-  .remember-list {
-    list-style: none;
-    margin-top: 12px;
-  }
-  .remember-list li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--ibm-gray-20);
-    font-size: 13px;
-    color: var(--ibm-gray-80);
-  }
-  .remember-list li:last-child { border-bottom: none; }
-  .remember-icon {
-    width: 18px; height: 18px;
-    background: var(--ibm-blue-60);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+/* ─── ARCH DIAGRAM ─── */
+.arch{display:flex;align-items:center;gap:0;margin:14px 0;overflow-x:auto;padding:4px 0;}
+.arch-box{background:var(--gray-100);color:#fff;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:center;white-space:nowrap;min-width:110px;}
+.arch-box.blue{background:var(--blue-60);}
+.arch-box.green{background:var(--green-50);}
+.arch-box.purple{background:var(--purple-60);}
+.arch-box.orange{background:#c44e00;}
+.arch-box.red{background:var(--red-60);}
+.arch-box.teal{background:#007d79;}
+.arch-arrow{color:var(--blue-40);font-size:18px;padding:0 6px;flex-shrink:0;}
 
-  /* SIMULATION */
-  .sim-input {
-    border: 1px solid var(--ibm-gray-40);
-    padding: 10px 12px;
-    width: 100%;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    color: var(--ibm-gray-100);
-    background: var(--ibm-white);
-    margin-bottom: 8px;
-    transition: border-color 0.15s;
-  }
-  .sim-input:focus {
-    outline: none;
-    border-color: var(--ibm-blue-60);
-    box-shadow: 0 0 0 2px var(--ibm-blue-20);
-  }
-  .sim-output {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    background: var(--ibm-gray-100);
-    color: #42be65;
-    padding: 16px;
-    min-height: 80px;
-    margin-top: 12px;
-    line-height: 1.7;
-  }
-  .sim-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--ibm-gray-60);
-    margin-bottom: 4px;
-  }
+/* ─── PIPELINE ─── */
+.pipe{display:flex;flex-direction:column;gap:2px;margin:12px 0;}
+.pipe-step{display:flex;align-items:center;gap:12px;background:var(--gray-10);border:1px solid var(--gray-20);padding:10px 14px;}
+.pipe-num{width:24px;height:24px;background:var(--blue-60);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pipe-label{font-size:12.5px;font-weight:500;color:var(--gray-100);}
+.pipe-sub{font-size:11px;color:var(--gray-60);}
 
-  /* QUIZ */
-  .quiz-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border: 1px solid var(--ibm-gray-20);
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-size: 13px;
-  }
-  .quiz-option:hover { border-color: var(--ibm-blue-60); background: var(--ibm-blue-10); }
-  .quiz-option input { accent-color: var(--ibm-blue-60); }
-  .quiz-result {
-    margin-top: 12px;
-    padding: 12px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    display: none;
-  }
-  .quiz-correct { background: #defbe6; color: var(--ibm-green-50); border-left: 4px solid var(--ibm-green-50); }
-  .quiz-wrong { background: #fff5f5; color: var(--ibm-red-60); border-left: 4px solid var(--ibm-red-60); }
+/* ─── FEATURE GRID ─── */
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
+.fcard{background:var(--gray-100);color:#fff;padding:14px 16px;}
+.fcard-icon{font-size:18px;margin-bottom:6px;}
+.fcard-title{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue-40);font-weight:600;margin-bottom:4px;}
+.fcard-desc{font-size:11px;color:var(--gray-40);line-height:1.5;}
 
-  /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(22,22,22,0.75);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-box {
-    background: var(--ibm-white);
-    width: 100%;
-    max-width: 740px;
-    max-height: 88vh;
-    overflow-y: auto;
-    border-top: 4px solid var(--ibm-blue-60);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-    animation: modalIn 0.2s ease;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: translateY(-16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .modal-header {
-    background: var(--ibm-gray-100);
-    color: var(--ibm-white);
-    padding: 20px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .modal-header-title {
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--ibm-gray-40);
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 4px;
-  }
-  .modal-close:hover { color: var(--ibm-white); }
-  .modal-body { padding: 28px; }
-  .modal-section {
-    margin-bottom: 24px;
-  }
-  .modal-section-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--ibm-blue-60);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--ibm-blue-20);
-  }
-  .modal-text {
-    font-size: 13px;
-    color: var(--ibm-gray-70);
-    line-height: 1.7;
-    margin-bottom: 8px;
-  }
-  .modal-text b { color: var(--ibm-gray-100); font-weight: 500; }
-
-  .key-reminder {
-    background: var(--ibm-blue-10);
-    border-left: 4px solid var(--ibm-blue-60);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--ibm-gray-80);
-    margin-top: 12px;
-  }
-  .key-reminder b { color: var(--ibm-blue-70); }
-
-  .warning-box {
-    background: #fff5f5;
-    border-left: 4px solid var(--ibm-red-60);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--ibm-gray-80);
-    margin-top: 8px;
-  }
-
-  .tip-box {
-    background: #defbe6;
-    border-left: 4px solid var(--ibm-green-50);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--ibm-gray-80);
-    margin-top: 8px;
-  }
-
-  /* DIVIDERS */
-  .section-divider {
-    height: 24px;
-  }
-
-  /* TABS in modal */
-  .modal-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--ibm-gray-20);
-    margin-bottom: 20px;
-    gap: 0;
-  }
-  .modal-tab {
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    color: var(--ibm-gray-60);
-    margin-bottom: -1px;
-    transition: all 0.15s;
-  }
-  .modal-tab.active {
-    color: var(--ibm-blue-60);
-    border-bottom-color: var(--ibm-blue-60);
-  }
-  .modal-tab-panel { display: none; }
-  .modal-tab-panel.active { display: block; }
-
-  /* PAGE INTRO HERO */
-  .hero {
-    background: var(--ibm-gray-100);
-    color: var(--ibm-white);
-    padding: 32px;
-    margin-bottom: 2px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    right: -40px; top: -40px;
-    width: 240px; height: 240px;
-    border: 32px solid rgba(15,98,254,0.15);
-    border-radius: 50%;
-  }
-  .hero::after {
-    content: '';
-    position: absolute;
-    right: 40px; top: 40px;
-    width: 120px; height: 120px;
-    border: 16px solid rgba(15,98,254,0.08);
-    border-radius: 50%;
-  }
-  .hero-eyebrow {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--ibm-blue-40);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .hero-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    line-height: 1.2;
-  }
-  .hero-title span { color: var(--ibm-blue-40); }
-  .hero-desc {
-    font-size: 14px;
-    color: var(--ibm-gray-40);
-    font-weight: 300;
-    max-width: 520px;
-    line-height: 1.6;
-  }
-  .hero-stats {
-    display: flex;
-    gap: 32px;
-    margin-top: 20px;
-  }
-  .hero-stat-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ibm-blue-40);
-  }
-  .hero-stat-label {
-    font-size: 11px;
-    color: var(--ibm-gray-60);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    .main-wrapper { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    .detail-grid { grid-template-columns: 1fr; }
-    .hero-stats { flex-wrap: wrap; gap: 20px; }
-  }
+/* ─── RESPONSIVE ─── */
+@media(max-width:800px){
+  .main-wrap{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .dgrid,.dgrid3,.fgrid{grid-template-columns:1fr;}
+  .arch{flex-direction:column;}
+}
 </style>
 </head>
 <body>
@@ -586,766 +209,1426 @@
 <!-- HEADER -->
 <header class="site-header">
   <div class="header-inner">
-    <span class="header-logo">Demo</span>
-    <div class="header-divider"></div>
-    <span class="header-title">Developer Learning / Java</span>
-    <span class="header-badge">JAVA 21</span>
+    <span class="header-logo">IBM</span>
+    <div class="header-div"></div>
+    <span class="header-title">Developer Learning / Java 21 Enterprise Patterns</span>
+    <div class="header-badges">
+      <span class="hbadge hbadge-blue">JAVA 21</span>
+      <span class="hbadge hbadge-dark">SPRING BOOT 3</span>
+      <span class="hbadge hbadge-dark">TEMPORAL</span>
+    </div>
   </div>
 </header>
 
 <!-- HERO -->
-<div class="main-wrapper" style="padding-bottom:0; display:block; max-width:1200px;">
-  <div class="hero">
-    <div class="hero-eyebrow">Design Patterns · Java 21</div>
-    <h1 class="hero-title">Builder Pattern<br><span>In-Depth Tutorial</span></h1>
-    <p class="hero-desc">Master the Builder pattern, Jakarta validation, Lombok integration, and document ingestion pipelines. Production-ready Java 21 patterns used across IBM enterprise services.</p>
-    <div class="hero-stats">
-      <div><div class="hero-stat-num">5</div><div class="hero-stat-label">Topics</div></div>
-      <div><div class="hero-stat-num">12+</div><div class="hero-stat-label">Code Examples</div></div>
-      <div><div class="hero-stat-num">~30</div><div class="hero-stat-label">Min Read</div></div>
-    </div>
+<div style="max-width:1280px;margin:0 auto;">
+<div class="hero">
+  <div class="hero-eyebrow">Design Patterns · Async · Temporal · Spring · OCR Pipeline</div>
+  <h1 class="hero-title">Java 21 <span>Enterprise Patterns</span><br>Complete Reference Guide</h1>
+  <p class="hero-desc">Builder, CompletableFuture, Controllers, Temporal streaming OCR pipelines, concurrent locks, Spring bean lifecycle, @ControllerAdvice — production patterns used across DEMO enterprise microservices.</p>
+  <div class="hero-stats">
+    <div><div class="stat-num">12</div><div class="stat-lbl">Topics</div></div>
+    <div><div class="stat-num">40+</div><div class="stat-lbl">Code Examples</div></div>
+    <div><div class="stat-num">8</div><div class="stat-lbl">Live Demos</div></div>
+    <div><div class="stat-num">~60</div><div class="stat-lbl">Min Read</div></div>
   </div>
+</div>
 </div>
 
 <!-- MAIN -->
-<div class="main-wrapper">
+<div class="main-wrap">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-label">On This Page</div>
-    <a class="sidebar-link active" onclick="scrollTo('sec-overview')"><div class="sidebar-dot"></div> Overview</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-builder')"><div class="sidebar-dot"></div> Builder Interface</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-dto')"><div class="sidebar-dot"></div> DTO / Record</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-validation')"><div class="sidebar-dot"></div> Jakarta Validation</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-lombok')"><div class="sidebar-dot"></div> Lombok</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-simulation')"><div class="sidebar-dot"></div> Live Simulation</a>
-    <a class="sidebar-link" onclick="scrollTo('sec-quiz')"><div class="sidebar-dot"></div> Knowledge Quiz</a>
-  </aside>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Foundations</div>
+    <div class="sb-link active" onclick="goTo('sec-overview')"><div class="sb-dot"></div>Overview &amp; Builder</div>
+    <div class="sb-link" onclick="goTo('sec-dto')"><div class="sb-dot"></div>DTOs &amp; Records</div>
+    <div class="sb-link" onclick="goTo('sec-validation')"><div class="sb-dot"></div>Jakarta Validation</div>
+    <div class="sb-link" onclick="goTo('sec-lombok')"><div class="sb-dot"></div>Lombok</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Async &amp; Concurrency</div>
+    <div class="sb-link" onclick="goTo('sec-cf')"><div class="sb-dot yellow"></div>CompletableFuture</div>
+    <div class="sb-link" onclick="goTo('sec-async')"><div class="sb-dot yellow"></div>@EnableAsync &amp; @Async</div>
+    <div class="sb-link" onclick="goTo('sec-locks')"><div class="sb-dot red"></div>Concurrent Locks</div>
+    <div class="sb-link" onclick="goTo('sec-singleton')"><div class="sb-dot red"></div>Singletons</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Spring Framework</div>
+    <div class="sb-link" onclick="goTo('sec-ctrl')"><div class="sb-dot cyan"></div>REST Controllers</div>
+    <div class="sb-link" onclick="goTo('sec-beans')"><div class="sb-dot green"></div>@Component &amp; @Bean</div>
+    <div class="sb-link" onclick="goTo('sec-advice')"><div class="sb-dot orange"></div>@ControllerAdvice</div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Pipeline</div>
+    <div class="sb-link" onclick="goTo('sec-temporal')"><div class="sb-dot purple"></div>Temporal + OCR Pipeline</div>
+    <div class="sb-link" onclick="goTo('sec-sim')"><div class="sb-dot green"></div>Live Simulation</div>
+    <div class="sb-link" onclick="goTo('sec-quiz')"><div class="sb-dot"></div>Quiz</div>
+  </div>
+</aside>
 
-  <!-- CONTENT -->
-  <div class="content">
+<!-- CONTENT -->
+<div>
 
-    <!-- OVERVIEW -->
-    <div id="sec-overview" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-core">Foundation</div>
-          <div class="card-title">Overview — Why Builder?</div>
-          <div class="card-subtitle">Understanding the problem Builder solves in large-scale Java systems</div>
-        </div>
-        <button class="btn-ghost" onclick="openModal('modal-overview')">Advanced Examples →</button>
-      </div>
-      <div class="card-body">
-        <p class="desc-text">The <b>Builder pattern</b> is a creational design pattern that separates the construction of a complex object from its representation. It is especially valuable when constructors would otherwise require <b>many parameters</b>, some optional, creating ambiguous code that is hard to read and maintain.</p>
-        <p class="desc-text">In Java 21 enterprise systems — such as IBM's document ingestion pipelines — objects like <b>DocumentRequest</b>, <b>PolicyRecord</b>, or <b>TransactionDTO</b> can have 10–20+ fields. Passing them all via constructor leads to "telescoping constructor" anti-patterns.</p>
-        <div class="detail-grid">
-          <div class="detail-card">
-            <div class="detail-card-label">Problem Without Builder</div>
-            <div class="detail-card-text">new Document("id1", "file.pdf", null, "RECEIVED", true, null, null, false) — unreadable and error-prone.</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-card-label">Solution With Builder</div>
-            <div class="detail-card-text">Document.builder().id("id1").name("file.pdf").status("RECEIVED").valid(true).build() — fluent, self-documenting.</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-card-label">Immutability Guarantee</div>
-            <div class="detail-card-text">Builder enforces field collection before construction, enabling fully immutable objects once built (records, @Value).</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-card-label">Validation Gate</div>
-            <div class="detail-card-text">The build() method is the single point of validation — reject invalid state before the object ever exists.</div>
-          </div>
-        </div>
-        <ul class="remember-list" style="margin-top:16px;">
-          <li><div class="remember-icon">!</div> Builder is <b>not</b> the same as the Factory pattern — Builder constructs step-by-step; Factory creates in one call.</li>
-          <li><div class="remember-icon">!</div> Always make built objects <b>immutable</b> — use <code style="font-family:IBM Plex Mono,monospace;font-size:12px">record</code> or <code style="font-family:IBM Plex Mono,monospace;font-size:12px">@Value</code> (Lombok).</li>
-          <li><div class="remember-icon">!</div> Call <code style="font-family:IBM Plex Mono,monospace;font-size:12px">build()</code> exactly <b>once</b> — reusing a builder after build() can cause shared mutable state bugs.</li>
-        </ul>
-      </div>
+<!-- ═══════════════════ OVERVIEW ═══════════════════ -->
+<div id="sec-overview" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-core">Foundation</div>
+      <div class="card-title">Overview — Builder Pattern</div>
+      <div class="card-sub">Fluent object construction · immutability · validation gates</div>
     </div>
-
-    <div class="section-divider"></div>
-
-    <!-- BUILDER INTERFACE -->
-    <div id="sec-builder" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-core">Core Pattern</div>
-          <div class="card-title">Builder Interface</div>
-          <div class="card-subtitle">Defining the fluent construction contract with Java interfaces</div>
-        </div>
-        <button class="btn-ghost" onclick="openModal('modal-builder')">Advanced Examples →</button>
-      </div>
-      <div class="card-body">
-        <p class="desc-text">The <b>DocumentBuilder interface</b> defines the contract for constructing a Document. Each method returns <b>DocumentBuilder</b> itself, enabling method chaining. The final <code style="font-family:IBM Plex Mono,monospace;font-size:12px">build()</code> call terminates the chain and returns the completed object.</p>
-
-        <pre class="code-block"><span class="code-comment">// Builder interface — the construction contract</span>
-<span class="code-keyword">public interface</span> <span class="code-type">DocumentBuilder</span> {
-    <span class="code-type">DocumentBuilder</span> <span class="code-method">id</span>(<span class="code-type">String</span> id);
-    <span class="code-type">DocumentBuilder</span> <span class="code-method">name</span>(<span class="code-type">String</span> name);
-    <span class="code-type">DocumentBuilder</span> <span class="code-method">type</span>(<span class="code-type">String</span> type);
-    <span class="code-type">DocumentBuilder</span> <span class="code-method">status</span>(<span class="code-type">String</span> status);
-    <span class="code-type">DocumentBuilder</span> <span class="code-method">valid</span>(<span class="code-keyword">boolean</span> valid);
-    <span class="code-type">Document</span>        <span class="code-method">build</span>();  <span class="code-comment">// terminates the chain</span>
-}
-
-<span class="code-comment">// Default implementation (inner or package-private)</span>
-<span class="code-keyword">class</span> <span class="code-type">DefaultBuilder</span> <span class="code-keyword">implements</span> <span class="code-type">DocumentBuilder</span> {
-    <span class="code-keyword">private</span> <span class="code-type">String</span> id, name, type, status;
-    <span class="code-keyword">private boolean</span> valid;
-
-    <span class="code-keyword">public</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">id</span>(<span class="code-type">String</span> id)     { <span class="code-keyword">this</span>.id = id; <span class="code-keyword">return this</span>; }
-    <span class="code-keyword">public</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">name</span>(<span class="code-type">String</span> n)   { <span class="code-keyword">this</span>.name = n; <span class="code-keyword">return this</span>; }
-    <span class="code-keyword">public</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">type</span>(<span class="code-type">String</span> t)   { <span class="code-keyword">this</span>.type = t; <span class="code-keyword">return this</span>; }
-    <span class="code-keyword">public</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">status</span>(<span class="code-type">String</span> s) { <span class="code-keyword">this</span>.status = s; <span class="code-keyword">return this</span>; }
-    <span class="code-keyword">public</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">valid</span>(<span class="code-keyword">boolean</span> v) { <span class="code-keyword">this</span>.valid = v; <span class="code-keyword">return this</span>; }
-
-    <span class="code-keyword">public</span> <span class="code-type">Document</span> <span class="code-method">build</span>() {
-        <span class="code-comment">// Validate before constructing</span>
-        <span class="code-keyword">if</span> (name == <span class="code-keyword">null</span> || name.isBlank())
-            <span class="code-keyword">throw new</span> <span class="code-type">IllegalStateException</span>(<span class="code-string">"name required"</span>);
-        <span class="code-keyword">return new</span> <span class="code-type">Document</span>(id, name, type, status, valid);
-    }
-}</pre>
-      </div>
+    <button class="btn btn-ghost" onclick="openM('m-overview')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">The <b>Builder pattern</b> prevents telescoping constructors by assembling objects field-by-field through a fluent API. The <code class="il">build()</code> call is the single validation gate — the object never exists in an invalid state.</p>
+    <pre class="cb"><span class="cm">// Fluent builder chain — self-documenting, safe</span>
+<span class="ty">Document</span> doc = <span class="ty">Document</span>.<span class="me">builder</span>()
+    .<span class="me">id</span>(<span class="ty">UUID</span>.<span class="me">randomUUID</span>().toString())
+    .<span class="me">name</span>(<span class="st">"Q3-Report.pdf"</span>)
+    .<span class="me">type</span>(<span class="st">"PDF"</span>)
+    .<span class="me">status</span>(<span class="st">"RECEIVED"</span>)
+    .<span class="me">valid</span>(<span class="kw">true</span>)
+    .<span class="me">build</span>();  <span class="cm">// validates, then constructs</span></pre>
+    <div class="dgrid">
+      <div class="dc"><div class="dc-lbl">Without Builder</div><div class="dc-txt"><code class="il">new Doc("id","name",null,"REC",true,null,false)</code> — positional, unreadable, error-prone.</div></div>
+      <div class="dc"><div class="dc-lbl">With Builder</div><div class="dc-txt">Named setters make intent clear. Optional fields remain at default. Validation runs once in <code class="il">build()</code>.</div></div>
     </div>
+    <ul class="rlist">
+      <li><div class="ri">!</div> Always make built objects <b>immutable</b> — use Java records or Lombok <code class="il">@Value</code>.</li>
+      <li><div class="ri">!</div> The <code class="il">build()</code> method must be called <b>exactly once</b> per builder instance.</li>
+      <li><div class="ri">!</div> Builder ≠ Factory. Builder is step-by-step; Factory creates in one opaque call.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
 
-    <div class="section-divider"></div>
-
-    <!-- DTO / RECORD -->
-    <div id="sec-dto" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-dto">Java 16+</div>
-          <div class="card-title">DTO with Java Records</div>
-          <div class="card-subtitle">Immutable data carriers using Java's record keyword</div>
-        </div>
-        <button class="btn-ghost" onclick="openModal('modal-dto')">Advanced Examples →</button>
-      </div>
-      <div class="card-body">
-        <p class="desc-text"><b>Java Records</b> (stable since Java 16) provide compact, immutable data classes with zero boilerplate. They automatically generate <b>constructor, getters, equals(), hashCode(), and toString()</b>. Pairing records with the Builder pattern gives you the best of both: fluent construction + guaranteed immutability.</p>
-
-        <pre class="code-block"><span class="code-comment">// Java 21 record — compact immutable DTO</span>
-<span class="code-keyword">public record</span> <span class="code-type">Document</span>(
-    <span class="code-type">String</span>  id,
-    <span class="code-type">String</span>  name,
-    <span class="code-type">String</span>  type,
-    <span class="code-type">String</span>  status,
-    <span class="code-keyword">boolean</span> valid
+<!-- ═══════════════════ DTO / RECORD ═══════════════════ -->
+<div id="sec-dto" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-dto">Java 16+</div>
+      <div class="card-title">DTOs with Java Records</div>
+      <div class="card-sub">Immutable data carriers — zero boilerplate, full compiler support</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-dto')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">Java <b>Records</b> auto-generate constructor, getters, <code class="il">equals()</code>, <code class="il">hashCode()</code>, <code class="il">toString()</code>. Fields are implicitly <b>private final</b>. Perfect as DTOs, response payloads, and command objects.</p>
+    <pre class="cb"><span class="kw">public record</span> <span class="ty">Document</span>(
+    <span class="ty">String</span>  id,
+    <span class="ty">String</span>  name,
+    <span class="ty">String</span>  type,
+    <span class="ty">String</span>  status,
+    <span class="kw">boolean</span> valid,
+    <span class="ty">Instant</span> createdAt
 ) {
-    <span class="code-comment">// Compact constructor for record-level validation</span>
-    <span class="code-keyword">public</span> <span class="code-type">Document</span> {
-        <span class="code-type">Objects</span>.<span class="code-method">requireNonNull</span>(name, <span class="code-string">"name must not be null"</span>);
-        <span class="code-keyword">if</span> (name.isBlank()) <span class="code-keyword">throw new</span> <span class="code-type">IllegalArgumentException</span>(<span class="code-string">"name blank"</span>);
+    <span class="cm">// Compact constructor — validation before assignment</span>
+    <span class="kw">public</span> <span class="ty">Document</span> {
+        <span class="ty">Objects</span>.<span class="me">requireNonNull</span>(name, <span class="st">"name required"</span>);
+        createdAt = createdAt != <span class="kw">null</span> ? createdAt : <span class="ty">Instant</span>.<span class="me">now</span>();
+    }
+    <span class="cm">// Derived method</span>
+    <span class="kw">public boolean</span> <span class="me">isProcessable</span>() { <span class="kw">return</span> valid && <span class="st">"RECEIVED"</span>.<span class="me">equals</span>(status); }
+    <span class="kw">public static</span> <span class="ty">DocumentBuilder</span> <span class="me">builder</span>() { <span class="kw">return new</span> <span class="ty">DefaultBuilder</span>(); }
+}</pre>
+    <ul class="rlist">
+      <li><div class="ri">!</div> Records are <b>implicitly final</b> — they cannot be extended.</li>
+      <li><div class="ri">!</div> Works natively with Jackson, Spring Data projections, and pattern matching switches.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ VALIDATION ═══════════════════ -->
+<div id="sec-validation" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-core">Jakarta EE</div>
+      <div class="card-title">Jakarta Bean Validation 3.0</div>
+      <div class="card-sub">Declarative constraint annotations · custom validators · error responses</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-validation')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">Annotate record/class fields with constraints. Spring's <code class="il">@Valid</code> on a controller parameter triggers validation automatically — violations produce structured 400 responses.</p>
+    <pre class="cb"><span class="kw">public record</span> <span class="ty">DocumentRequest</span>(
+    <span class="an">@NotBlank</span>(message=<span class="st">"Name required"</span>)
+    <span class="an">@Size</span>(max=<span class="nu">255</span>)               <span class="ty">String</span> name,
+    <span class="an">@NotBlank</span> <span class="an">@Size</span>(min=<span class="nu">5</span>,max=<span class="nu">5000</span>) <span class="ty">String</span> content,
+    <span class="an">@Pattern</span>(regexp=<span class="st">"PDF|DOCX|TXT"</span>)  <span class="ty">String</span> type,
+    <span class="an">@Email</span>                           <span class="ty">String</span> submittedBy
+) {}</pre>
+    <div class="dgrid3">
+      <div class="dc"><div class="dc-lbl">@NotNull</div><div class="dc-txt">Rejects null only. Empty string passes.</div></div>
+      <div class="dc"><div class="dc-lbl">@NotEmpty</div><div class="dc-txt">Rejects null + empty string/collection.</div></div>
+      <div class="dc"><div class="dc-lbl">@NotBlank</div><div class="dc-txt">Rejects null, empty, AND whitespace. Use for names/content.</div></div>
+    </div>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ LOMBOK ═══════════════════ -->
+<div id="sec-lombok" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-lombok">Lombok</div>
+      <div class="card-title">Lombok @Builder, @Value, @Singular</div>
+      <div class="card-sub">Compile-time code generation — zero runtime overhead</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-lombok')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">Lombok's <code class="il">@Builder</code> generates a complete inner builder class at compile time. <code class="il">@Value</code> makes all fields <code class="il">final</code> with no setters. <code class="il">toBuilder=true</code> enables non-destructive copies.</p>
+    <pre class="cb green"><span class="an">@Value</span> <span class="an">@Builder</span>(toBuilder = <span class="kw">true</span>)
+<span class="kw">public class</span> <span class="ty">DocumentDTO</span> {
+    <span class="an">@NonNull</span>         <span class="ty">String</span>  id;
+    <span class="an">@NonNull</span>         <span class="ty">String</span>  name;
+    <span class="an">@Builder.Default</span> <span class="ty">String</span>  status    = <span class="st">"PENDING"</span>;
+    <span class="an">@Builder.Default</span> <span class="ty">Instant</span> createdAt = <span class="ty">Instant</span>.<span class="me">now</span>();
+    <span class="an">@Singular</span>        <span class="ty">List</span>&lt;<span class="ty">String</span>&gt; tags;
+}
+<span class="cm">// Non-destructive copy via toBuilder</span>
+<span class="ty">DocumentDTO</span> approved = original.<span class="me">toBuilder</span>().<span class="me">status</span>(<span class="st">"APPROVED"</span>).<span class="me">build</span>();</pre>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ COMPLETABLE FUTURE ═══════════════════ -->
+<div id="sec-cf" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-async">Async</div>
+      <div class="card-title">CompletableFuture — Async in Plain English</div>
+      <div class="card-sub">Non-blocking pipelines · chaining · error handling · combining results</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-cf')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc"><b>CompletableFuture</b> lets you run tasks in the background without blocking the current thread. Think of it like placing an order at a coffee shop: you don't stand frozen at the counter — you get a ticket (the Future) and go sit down. When it's ready, you're called back.</p>
+
+    <div class="fgrid">
+      <div class="fcard"><div class="fcard-icon">⚡</div><div class="fcard-title">supplyAsync()</div><div class="fcard-desc">Runs a task on a background thread and returns a value.</div></div>
+      <div class="fcard"><div class="fcard-icon">🔗</div><div class="fcard-title">thenApply()</div><div class="fcard-desc">Transform the result — like map() for streams.</div></div>
+      <div class="fcard"><div class="fcard-icon">🧩</div><div class="fcard-title">thenCompose()</div><div class="fcard-desc">Chain two async operations (flatMap equivalent).</div></div>
+      <div class="fcard"><div class="fcard-icon">🔀</div><div class="fcard-title">thenCombine()</div><div class="fcard-desc">Merge two independent futures when both complete.</div></div>
+      <div class="fcard"><div class="fcard-icon">🛡️</div><div class="fcard-title">exceptionally()</div><div class="fcard-desc">Recover from errors — provide a fallback value.</div></div>
+      <div class="fcard"><div class="fcard-icon">🏁</div><div class="fcard-title">allOf()</div><div class="fcard-desc">Wait for ALL futures to finish before proceeding.</div></div>
+    </div>
+
+    <pre class="cb yellow"><span class="cm">// SIMPLE EXAMPLE — fetch user profile in background</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">UserProfile</span>&gt; profileFuture =
+    <span class="ty">CompletableFuture</span>
+        .<span class="me">supplyAsync</span>(() -&gt; userRepo.<span class="me">findById</span>(userId))   <span class="cm">// runs on ForkJoinPool</span>
+        .<span class="me">thenApply</span>(user -&gt; mapper.<span class="me">toProfile</span>(user))        <span class="cm">// transform result</span>
+        .<span class="me">exceptionally</span>(ex -&gt; <span class="ty">UserProfile</span>.<span class="me">anonymous</span>());    <span class="cm">// fallback on error</span>
+
+<span class="cm">// Get the result (blocks here if not ready)</span>
+<span class="ty">UserProfile</span> profile = profileFuture.<span class="me">join</span>();
+
+<span class="cm">// ─────────────────────────────────────────────────</span>
+<span class="cm">// COMBINE TWO INDEPENDENT TASKS running in parallel</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; textFuture   = <span class="ty">CompletableFuture</span>.<span class="me">supplyAsync</span>(() -&gt; ocrService.<span class="me">extract</span>(file));
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; metaFuture   = <span class="ty">CompletableFuture</span>.<span class="me">supplyAsync</span>(() -&gt; metaService.<span class="me">read</span>(file));
+
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">IndexPayload</span>&gt; combined =
+    textFuture.<span class="me">thenCombine</span>(metaFuture,
+        (text, meta) -&gt; <span class="ty">IndexPayload</span>.<span class="me">builder</span>()
+            .<span class="me">text</span>(text).<span class="me">metadata</span>(meta).<span class="me">build</span>());
+
+<span class="cm">// ─────────────────────────────────────────────────</span>
+<span class="cm">// WAIT FOR ALL — process 100 documents concurrently</span>
+<span class="ty">List</span>&lt;<span class="ty">CompletableFuture</span>&lt;<span class="ty">Void</span>&gt;&gt; tasks = documents.<span class="me">stream</span>()
+    .<span class="me">map</span>(doc -&gt; <span class="ty">CompletableFuture</span>.<span class="me">runAsync</span>(() -&gt; process(doc), executor))
+    .<span class="me">toList</span>();
+
+<span class="ty">CompletableFuture</span>.<span class="me">allOf</span>(tasks.<span class="me">toArray</span>(<span class="kw">new</span> <span class="ty">CompletableFuture</span>[<span class="nu">0</span>])).<span class="me">join</span>();</pre>
+
+    <div class="dgrid">
+      <div class="dc"><div class="dc-lbl">thenApply vs thenCompose</div><div class="dc-txt"><code class="il">thenApply(f)</code> — f returns a plain value T.<br><code class="il">thenCompose(f)</code> — f returns another <code class="il">CompletableFuture&lt;T&gt;</code>. Use when chaining async calls to avoid nested futures.</div></div>
+      <div class="dc"><div class="dc-lbl">get() vs join()</div><div class="dc-txt"><code class="il">get()</code> throws checked <code class="il">ExecutionException</code> — must handle in try/catch.<br><code class="il">join()</code> throws unchecked <code class="il">CompletionException</code> — cleaner in streams and lambdas.</div></div>
+    </div>
+
+    <ul class="rlist">
+      <li><div class="ri y">!</div> <b>Never call <code class="il">get()</code> / <code class="il">join()</code> inside another async stage</b> — that defeats the purpose and can deadlock.</li>
+      <li><div class="ri y">!</div> Always provide a <b>custom Executor</b> (e.g. <code class="il">ThreadPoolTaskExecutor</code>) in production — the default ForkJoinPool is shared and has no I/O tuning.</li>
+      <li><div class="ri y">!</div> Use <code class="il">exceptionally()</code> or <code class="il">handle()</code> to prevent silent swallowing of async exceptions.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ @ENABLEASYNC ═══════════════════ -->
+<div id="sec-async" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-async">Spring Async</div>
+      <div class="card-title">@EnableAsync · @Async · ThreadPoolTaskExecutor</div>
+      <div class="card-sub">Spring-managed async methods with custom thread pools</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-async')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc"><code class="il">@EnableAsync</code> on your config class tells Spring to proxy any <code class="il">@Async</code>-annotated method and run it on a background thread. Without it, <code class="il">@Async</code> is silently ignored.</p>
+
+    <pre class="cb yellow"><span class="cm">// 1. Enable async support + define a custom executor</span>
+<span class="an">@Configuration</span>
+<span class="an">@EnableAsync</span>
+<span class="kw">public class</span> <span class="ty">AsyncConfig</span> <span class="kw">implements</span> <span class="ty">AsyncConfigurer</span> {
+
+    <span class="an">@Bean</span>(name = <span class="st">"docExecutor"</span>)
+    <span class="kw">public</span> <span class="ty">Executor</span> <span class="me">documentExecutor</span>() {
+        <span class="ty">ThreadPoolTaskExecutor</span> ex = <span class="kw">new</span> <span class="ty">ThreadPoolTaskExecutor</span>();
+        ex.<span class="me">setCorePoolSize</span>(<span class="nu">4</span>);        <span class="cm">// min threads always alive</span>
+        ex.<span class="me">setMaxPoolSize</span>(<span class="nu">16</span>);       <span class="cm">// max under burst</span>
+        ex.<span class="me">setQueueCapacity</span>(<span class="nu">200</span>);   <span class="cm">// queue before rejecting</span>
+        ex.<span class="me">setThreadNamePrefix</span>(<span class="st">"doc-async-"</span>);
+        ex.<span class="me">setRejectedExecutionHandler</span>(<span class="kw">new</span> <span class="ty">CallerRunsPolicy</span>());
+        ex.<span class="me">initialize</span>();
+        <span class="kw">return</span> ex;
     }
 
-    <span class="code-comment">// Static factory to enter builder chain</span>
-    <span class="code-keyword">public static</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">builder</span>() {
-        <span class="code-keyword">return new</span> <span class="code-type">DefaultBuilder</span>();
+    <span class="cm">// Global uncaught exception handler for @Async methods</span>
+    <span class="an">@Override</span>
+    <span class="kw">public</span> <span class="ty">AsyncUncaughtExceptionHandler</span> <span class="me">getAsyncUncaughtExceptionHandler</span>() {
+        <span class="kw">return</span> (ex, method, params) -&gt;
+            log.<span class="me">error</span>(<span class="st">"Async error in {}: {}"</span>, method.<span class="me">getName</span>(), ex.<span class="me">getMessage</span>());
+    }
+}
+
+<span class="cm">// 2. Annotate service methods — Spring runs them on docExecutor</span>
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">OcrService</span> {
+
+    <span class="an">@Async</span>(<span class="st">"docExecutor"</span>)
+    <span class="kw">public</span> <span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; <span class="me">extractText</span>(<span class="ty">Path</span> file) {
+        <span class="ty">String</span> text = tesseract.<span class="me">doOCR</span>(file.<span class="me">toFile</span>());
+        <span class="kw">return</span> <span class="ty">CompletableFuture</span>.<span class="me">completedFuture</span>(text);
     }
 }</pre>
 
-        <ul class="remember-list">
-          <li><div class="remember-icon">!</div> Records are <b>implicitly final</b> — they cannot be subclassed.</li>
-          <li><div class="remember-icon">!</div> Record fields are <b>implicitly private and final</b> — set once at construction only.</li>
-          <li><div class="remember-icon">!</div> Use <b>compact constructors</b> (no parameter list) to add validation without repeating field assignments.</li>
-        </ul>
-      </div>
+    <div class="warn-box">⚠ <b>Self-invocation breaks @Async!</b> Calling an <code class="il">@Async</code> method from within the same class bypasses the Spring proxy — the method runs synchronously. Always call @Async methods from a different bean.</div>
+    <div class="tip-box">✓ Combine <code class="il">@Async</code> with <code class="il">CompletableFuture</code> return type to get both Spring thread management AND a composable async handle back to the caller.</div>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ CONCURRENT LOCKS ═══════════════════ -->
+<div id="sec-locks" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-lock">Concurrency</div>
+      <div class="card-title">Concurrent Locks &amp; Thread Safety</div>
+      <div class="card-sub">ReentrantLock · ReadWriteLock · synchronized · AtomicReference · tryLock</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-locks')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">When multiple threads access shared data, you need locks to prevent <b>race conditions</b> — two threads reading and writing the same variable simultaneously, producing corrupted results. Java gives you several tools, each with trade-offs.</p>
+
+    <div class="fgrid">
+      <div class="fcard"><div class="fcard-icon">🔒</div><div class="fcard-title">synchronized</div><div class="fcard-desc">Simplest. One thread at a time. Built into every Java object. Use for short critical sections.</div></div>
+      <div class="fcard"><div class="fcard-icon">🗝️</div><div class="fcard-title">ReentrantLock</div><div class="fcard-desc">Flexible. Supports tryLock(), timed waits, and fairness. Always unlock in finally.</div></div>
+      <div class="fcard"><div class="fcard-icon">📖</div><div class="fcard-title">ReadWriteLock</div><div class="fcard-desc">Multiple readers OR one writer. Great for caches — reads are concurrent, writes exclusive.</div></div>
+      <div class="fcard"><div class="fcard-icon">⚛️</div><div class="fcard-title">AtomicInteger/Ref</div><div class="fcard-desc">Lock-free for single variables. Uses CPU-level compare-and-swap. Fastest option for counters.</div></div>
+      <div class="fcard"><div class="fcard-icon">🏎️</div><div class="fcard-title">StampedLock</div><div class="fcard-desc">Java 8+. Optimistic reads — try without locking, validate afterwards. Highest throughput.</div></div>
+      <div class="fcard"><div class="fcard-icon">🔄</div><div class="fcard-title">ConcurrentHashMap</div><div class="fcard-desc">Thread-safe map with stripe-based locking. Far better than synchronizing a HashMap.</div></div>
     </div>
 
-    <div class="section-divider"></div>
+    <pre class="cb red"><span class="cm">// ── ReentrantLock — explicit control with tryLock ──</span>
+<span class="kw">private final</span> <span class="ty">ReentrantLock</span> lock = <span class="kw">new</span> <span class="ty">ReentrantLock</span>();
 
-    <!-- VALIDATION -->
-    <div id="sec-validation" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-validation">Jakarta EE</div>
-          <div class="card-title">Jakarta Validation (Bean Validation 3.0)</div>
-          <div class="card-subtitle">Declarative constraint annotations for input validation</div>
-        </div>
-        <button class="btn-ghost" onclick="openModal('modal-validation')">Advanced Examples →</button>
-      </div>
-      <div class="card-body">
-        <p class="desc-text"><b>Jakarta Bean Validation 3.0</b> (formerly Hibernate Validator) provides annotation-driven constraints. When combined with Spring Boot's <code style="font-family:IBM Plex Mono,monospace;font-size:12px">@Valid</code>, violations automatically return structured <b>400 Bad Request</b> responses with field-level error messages — no manual if-checks needed.</p>
+<span class="kw">public boolean</span> <span class="me">processDocument</span>(<span class="ty">String</span> docId) {
+    <span class="kw">if</span> (!lock.<span class="me">tryLock</span>(<span class="nu">500</span>, <span class="ty">TimeUnit</span>.MILLISECONDS)) {
+        log.<span class="me">warn</span>(<span class="st">"Could not acquire lock — skipping {}"</span>, docId);
+        <span class="kw">return false</span>;     <span class="cm">// non-blocking fallback</span>
+    }
+    <span class="kw">try</span> {
+        <span class="cm">// critical section — only one thread here at a time</span>
+        doProcess(docId);
+        <span class="kw">return true</span>;
+    } <span class="kw">finally</span> {
+        lock.<span class="me">unlock</span>();   <span class="cm">// ALWAYS unlock in finally</span>
+    }
+}
 
-        <pre class="code-block"><span class="code-comment">// Request DTO with validation constraints</span>
-<span class="code-keyword">public record</span> <span class="code-type">DocumentRequest</span>(
+<span class="cm">// ── ReadWriteLock — concurrent reads, exclusive writes ──</span>
+<span class="kw">private final</span> <span class="ty">ReadWriteLock</span> rwLock = <span class="kw">new</span> <span class="ty">ReentrantReadWriteLock</span>();
+<span class="kw">private</span> <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Document</span>&gt; cache = <span class="kw">new</span> <span class="ty">HashMap</span>&lt;&gt;();
 
-    <span class="code-annotation">@NotBlank</span>(message = <span class="code-string">"Document name is required"</span>)
-    <span class="code-annotation">@Size</span>(max = 255, message = <span class="code-string">"Name must not exceed 255 characters"</span>)
-    <span class="code-type">String</span> name,
+<span class="kw">public</span> <span class="ty">Document</span> <span class="me">get</span>(<span class="ty">String</span> id) {          <span class="cm">// many threads can read</span>
+    rwLock.<span class="me">readLock</span>().<span class="me">lock</span>();
+    <span class="kw">try</span>  { <span class="kw">return</span> cache.<span class="me">get</span>(id); }
+    <span class="kw">finally</span> { rwLock.<span class="me">readLock</span>().<span class="me">unlock</span>(); }
+}
 
-    <span class="code-annotation">@NotBlank</span>
-    <span class="code-annotation">@Size</span>(min = 5, max = 5000, message = <span class="code-string">"Content must be 5–5000 characters"</span>)
-    <span class="code-type">String</span> content,
+<span class="kw">public void</span> <span class="me">put</span>(<span class="ty">String</span> id, <span class="ty">Document</span> doc) { <span class="cm">// exclusive write</span>
+    rwLock.<span class="me">writeLock</span>().<span class="me">lock</span>();
+    <span class="kw">try</span>  { cache.<span class="me">put</span>(id, doc); }
+    <span class="kw">finally</span> { rwLock.<span class="me">writeLock</span>().<span class="me">unlock</span>(); }
+}
 
-    <span class="code-annotation">@NotNull</span>
-    <span class="code-annotation">@Pattern</span>(regexp = <span class="code-string">"PDF|DOCX|TXT"</span>, message = <span class="code-string">"Unsupported type"</span>)
-    <span class="code-type">String</span> type,
+<span class="cm">// ── AtomicInteger — lock-free counter ──</span>
+<span class="kw">private final</span> <span class="ty">AtomicInteger</span> processedCount = <span class="kw">new</span> <span class="ty">AtomicInteger</span>(<span class="nu">0</span>);
+<span class="kw">public void</span> <span class="me">markDone</span>() { processedCount.<span class="me">incrementAndGet</span>(); }   <span class="cm">// thread-safe, no lock</span></pre>
 
-    <span class="code-annotation">@Email</span>
-    <span class="code-type">String</span> submittedBy
+    <ul class="rlist">
+      <li><div class="ri r">!</div> <b>Always unlock in a finally block.</b> If unlock() is inside try{} and an exception occurs before it, the lock is held forever — deadlock.</li>
+      <li><div class="ri r">!</div> <b>Never hold a lock while doing I/O</b> (DB calls, HTTP, file reads). Other threads starve waiting. Do I/O outside the lock, then lock only for the write.</li>
+      <li><div class="ri r">!</div> <b>Lock ordering matters.</b> If Thread A locks X then Y, and Thread B locks Y then X — deadlock. Always acquire locks in the same order everywhere.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
 
-) {}
+<!-- ═══════════════════ SINGLETON ═══════════════════ -->
+<div id="sec-singleton" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-lock">Design Pattern</div>
+      <div class="card-title">Singleton Pattern &amp; Spring Bean Scope</div>
+      <div class="card-sub">Classic singleton · enum singleton · Spring singleton scope · double-checked locking</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-singleton')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">A <b>Singleton</b> ensures only one instance of a class exists in the JVM. In Spring, <b>all beans are singletons by default</b> — one instance per ApplicationContext, shared across all injection points. No need to hand-roll a singleton for Spring beans.</p>
 
-<span class="code-comment">// Spring controller — validation triggered by @Valid</span>
-<span class="code-annotation">@PostMapping</span>(<span class="code-string">"/documents"</span>)
-<span class="code-keyword">public</span> <span class="code-type">ResponseEntity</span>&lt;<span class="code-type">Document</span>&gt; <span class="code-method">create</span>(
-    <span class="code-annotation">@Valid</span> <span class="code-annotation">@RequestBody</span> <span class="code-type">DocumentRequest</span> req
+    <pre class="cb red"><span class="cm">// ── Classic thread-safe singleton (double-checked locking) ──</span>
+<span class="kw">public class</span> <span class="ty">TesseractEngine</span> {
+    <span class="cm">// volatile prevents CPU caching the partially-constructed object</span>
+    <span class="kw">private static volatile</span> <span class="ty">TesseractEngine</span> INSTANCE;
+
+    <span class="kw">private</span> <span class="ty">TesseractEngine</span>() { <span class="cm">/* expensive init */</span> }
+
+    <span class="kw">public static</span> <span class="ty">TesseractEngine</span> <span class="me">getInstance</span>() {
+        <span class="kw">if</span> (INSTANCE == <span class="kw">null</span>) {                  <span class="cm">// first check (no lock)</span>
+            <span class="kw">synchronized</span> (<span class="ty">TesseractEngine</span>.<span class="kw">class</span>) {
+                <span class="kw">if</span> (INSTANCE == <span class="kw">null</span>)            <span class="cm">// second check (with lock)</span>
+                    INSTANCE = <span class="kw">new</span> <span class="ty">TesseractEngine</span>();
+            }
+        }
+        <span class="kw">return</span> INSTANCE;
+    }
+}
+
+<span class="cm">// ── Enum singleton — simplest, serialization-safe ──</span>
+<span class="kw">public enum</span> <span class="ty">ElasticClientSingleton</span> {
+    INSTANCE;
+    <span class="kw">private final</span> <span class="ty">ElasticsearchClient</span> client = <span class="me">buildClient</span>();
+    <span class="kw">public</span> <span class="ty">ElasticsearchClient</span> <span class="me">get</span>() { <span class="kw">return</span> client; }
+}
+
+<span class="cm">// ── Spring singleton (PREFERRED) — just use @Component ──</span>
+<span class="an">@Component</span>  <span class="cm">// Spring manages ONE instance, shared via DI</span>
+<span class="kw">public class</span> <span class="ty">DocumentProcessor</span> {
+    <span class="cm">// Spring injects this everywhere — no getInstance() needed</span>
+}</pre>
+
+    <div class="tip-box">✓ In Spring apps, <b>never hand-roll a singleton</b>. Let Spring manage the lifecycle with <code class="il">@Component</code> / <code class="il">@Bean</code>. Use <code class="il">@Scope("prototype")</code> when you <em>do</em> need a new instance per injection.</div>
+    <ul class="rlist">
+      <li><div class="ri r">!</div> Singleton beans must be <b>stateless or thread-safe</b> — they're shared across all concurrent requests.</li>
+      <li><div class="ri r">!</div> Never store request-scoped state (user ID, session data) in a singleton field — use <code class="il">@RequestScope</code> beans or method locals.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ CONTROLLERS ═══════════════════ -->
+<div id="sec-ctrl" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-ctrl">Spring MVC</div>
+      <div class="card-title">REST Controllers</div>
+      <div class="card-sub">@RestController · routing · request binding · response patterns · streaming</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-ctrl')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc"><code class="il">@RestController</code> = <code class="il">@Controller</code> + <code class="il">@ResponseBody</code>. Every method return value is serialised to JSON automatically. Controllers should be <b>thin</b> — no business logic, just HTTP-to-service translation.</p>
+
+    <pre class="cb cyan"><span class="an">@RestController</span>
+<span class="an">@RequestMapping</span>(<span class="st">"/api/v1/documents"</span>)
+<span class="an">@RequiredArgsConstructor</span>
+<span class="kw">public class</span> <span class="ty">DocumentController</span> {
+
+    <span class="kw">private final</span> <span class="ty">DocumentService</span>   service;
+    <span class="kw">private final</span> <span class="ty">TemporalClient</span>    temporalClient;
+
+    <span class="cm">// ── GET all (paged) ──────────────────────────────────</span>
+    <span class="an">@GetMapping</span>
+    <span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">Page</span>&lt;<span class="ty">DocumentDTO</span>&gt;&gt; <span class="me">list</span>(
+            <span class="an">@RequestParam</span>(defaultValue=<span class="st">"0"</span>)  <span class="kw">int</span> page,
+            <span class="an">@RequestParam</span>(defaultValue=<span class="st">"20"</span>) <span class="kw">int</span> size) {
+        <span class="kw">return</span> <span class="ty">ResponseEntity</span>.<span class="me">ok</span>(service.<span class="me">findAll</span>(<span class="ty">PageRequest</span>.<span class="me">of</span>(page, size)));
+    }
+
+    <span class="cm">// ── GET by id ─────────────────────────────────────────</span>
+    <span class="an">@GetMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">DocumentDTO</span>&gt; <span class="me">getById</span>(<span class="an">@PathVariable</span> <span class="ty">String</span> id) {
+        <span class="kw">return</span> service.<span class="me">findById</span>(id)
+            .<span class="me">map</span>(<span class="ty">ResponseEntity</span>::<span class="me">ok</span>)
+            .<span class="me">orElse</span>(<span class="ty">ResponseEntity</span>.<span class="me">notFound</span>().<span class="me">build</span>());
+    }
+
+    <span class="cm">// ── POST — ingest + trigger Temporal workflow ─────────</span>
+    <span class="an">@PostMapping</span>(consumes = <span class="ty">MediaType</span>.MULTIPART_FORM_DATA_VALUE)
+    <span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">WorkflowHandle</span>&gt; <span class="me">ingest</span>(
+            <span class="an">@RequestPart</span>(<span class="st">"metadata"</span>) <span class="an">@Valid</span> <span class="ty">DocumentRequest</span> req,
+            <span class="an">@RequestPart</span>(<span class="st">"file"</span>)     <span class="ty">MultipartFile</span> file) {
+
+        <span class="ty">String</span> workflowId = temporalClient.<span class="me">startOcrWorkflow</span>(req, file);
+        <span class="ty">URI</span> location = <span class="ty">URI</span>.<span class="me">create</span>(<span class="st">"/api/v1/documents/status/"</span> + workflowId);
+        <span class="kw">return</span> <span class="ty">ResponseEntity</span>.<span class="me">accepted</span>().<span class="me">location</span>(location).<span class="me">build</span>();
+    }
+
+    <span class="cm">// ── DELETE ────────────────────────────────────────────</span>
+    <span class="an">@DeleteMapping</span>(<span class="st">"/{id}"</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.NO_CONTENT)
+    <span class="kw">public void</span> <span class="me">delete</span>(<span class="an">@PathVariable</span> <span class="ty">String</span> id) { service.<span class="me">delete</span>(id); }
+
+    <span class="cm">// ── SSE streaming — real-time progress events ─────────</span>
+    <span class="an">@GetMapping</span>(value=<span class="st">"/stream/{id}"</span>, produces=<span class="ty">MediaType</span>.TEXT_EVENT_STREAM_VALUE)
+    <span class="kw">public</span> <span class="ty">SseEmitter</span> <span class="me">streamProgress</span>(<span class="an">@PathVariable</span> <span class="ty">String</span> id) {
+        <span class="kw">return</span> service.<span class="me">createProgressStream</span>(id);
+    }
+}</pre>
+
+    <div class="dgrid">
+      <div class="dc"><div class="dc-lbl">Return Types</div><div class="dc-txt"><code class="il">ResponseEntity&lt;T&gt;</code> — full control of status + headers.<br><code class="il">T</code> directly — Spring defaults to 200 OK.<br><code class="il">void</code> + <code class="il">@ResponseStatus</code> — for 201/204 with no body.</div></div>
+      <div class="dc"><div class="dc-lbl">Streaming Options</div><div class="dc-txt"><code class="il">SseEmitter</code> — Server-Sent Events (one-way push).<br><code class="il">StreamingResponseBody</code> — chunked file download.<br><code class="il">ResponseBodyEmitter</code> — generic async streaming.</div></div>
+    </div>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ @COMPONENT & @BEAN ═══════════════════ -->
+<div id="sec-beans" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-spring">Spring DI</div>
+      <div class="card-title">@Component, @Bean, @Service, @Repository</div>
+      <div class="card-sub">Bean registration · lifecycle · scope · the difference explained simply</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-beans')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc">Spring's DI container manages objects called <b>beans</b>. You tell Spring what to manage using annotations. Think of it as a box Spring keeps — you ask for things, Spring hands them out.</p>
+
+    <div class="dgrid">
+      <div class="dc"><div class="dc-lbl">@Component</div><div class="dc-txt">Generic stereotype. Put it on any class you own and Spring auto-detects it via component scanning. Use when no more specific stereotype fits.</div></div>
+      <div class="dc"><div class="dc-lbl">@Service</div><div class="dc-txt">Semantically: business logic layer. Technically identical to @Component but communicates intent. Use for service classes.</div></div>
+      <div class="dc"><div class="dc-lbl">@Repository</div><div class="dc-txt">Data access layer. Spring adds exception translation (maps DB exceptions to DataAccessException). Use for DAOs.</div></div>
+      <div class="dc"><div class="dc-lbl">@Bean (on @Configuration methods)</div><div class="dc-txt">For third-party classes you <em>can't</em> annotate — e.g. RestClient, Tesseract, ElasticsearchClient. The @Bean method IS the factory.</div></div>
+    </div>
+
+    <pre class="cb green"><span class="cm">// ── @Component / @Service — your own classes ──</span>
+<span class="an">@Service</span>                   <span class="cm">// same as @Component but clearer</span>
+<span class="kw">public class</span> <span class="ty">DocumentIndexService</span> { ... }
+
+<span class="an">@Repository</span>
+<span class="kw">public class</span> <span class="ty">DocumentRepository</span> { ... }
+
+<span class="cm">// ── @Bean — third-party objects Spring can't scan ──</span>
+<span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="ty">InfraConfig</span> {
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">ElasticsearchClient</span> <span class="me">elasticsearchClient</span>(
+            <span class="an">@Value</span>(<span class="st">"${elastic.url}"</span>) <span class="ty">String</span> url) {
+        <span class="ty">RestClient</span> rest = <span class="ty">RestClient</span>.<span class="me">builder</span>(
+            <span class="ty">HttpHost</span>.<span class="me">create</span>(url)).<span class="me">build</span>();
+        <span class="kw">return</span> <span class="kw">new</span> <span class="ty">ElasticsearchClient</span>(<span class="kw">new</span> <span class="ty">RestClientTransport</span>(rest, <span class="kw">new</span> <span class="ty">JacksonJsonpMapper</span>()));
+    }
+
+    <span class="an">@Bean</span>
+    <span class="kw">public</span> <span class="ty">Tesseract</span> <span class="me">tesseract</span>() {
+        <span class="ty">Tesseract</span> t = <span class="kw">new</span> <span class="ty">Tesseract</span>();
+        t.<span class="me">setDatapath</span>(<span class="st">"/usr/share/tessdata"</span>);
+        t.<span class="me">setLanguage</span>(<span class="st">"eng"</span>);
+        <span class="kw">return</span> t;   <span class="cm">// Spring holds ONE shared instance</span>
+    }
+
+    <span class="an">@Bean</span>
+    <span class="an">@Scope</span>(<span class="st">"prototype"</span>)   <span class="cm">// NEW instance every injection point</span>
+    <span class="kw">public</span> <span class="ty">DocumentPipeline</span> <span class="me">documentPipeline</span>() {
+        <span class="kw">return new</span> <span class="ty">DocumentPipeline</span>();
+    }
+}</pre>
+
+    <ul class="rlist">
+      <li><div class="ri g">!</div> <b>Component scanning</b> only finds classes in packages at or below your <code class="il">@SpringBootApplication</code> class. Misplace a class outside that package and it's invisible to Spring.</li>
+      <li><div class="ri g">!</div> <b>Singleton scope is default.</b> One instance for ALL requests. Never store per-request state in a singleton field.</li>
+      <li><div class="ri g">!</div> Use <code class="il">@Primary</code> or <code class="il">@Qualifier("name")</code> when you have two beans of the same type to tell Spring which to inject.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ @CONTROLLERADVICE ═══════════════════ -->
+<div id="sec-advice" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-advice">Spring MVC</div>
+      <div class="card-title">@ControllerAdvice — Global Error Handling</div>
+      <div class="card-sub">Centralised exception handling · structured error responses · @ExceptionHandler · @ResponseStatus</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-advice')">Advanced Examples →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc"><code class="il">@ControllerAdvice</code> is a single class that intercepts exceptions thrown by <b>any controller</b> in your app. Without it, every controller needs its own try/catch blocks — with it, error handling lives in one place.</p>
+    <p class="desc">Think of it as a <b>safety net</b> stretched under all your controllers. Any unhandled exception falls into it and gets converted to a clean, consistent JSON error response.</p>
+
+    <pre class="cb orange"><span class="an">@RestControllerAdvice</span>           <span class="cm">// @ControllerAdvice + @ResponseBody</span>
+<span class="kw">public class</span> <span class="ty">GlobalExceptionHandler</span> {
+
+    <span class="cm">// ── Validation failures (@Valid) → 400 ──────────────</span>
+    <span class="an">@ExceptionHandler</span>(<span class="ty">MethodArgumentNotValidException</span>.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.BAD_REQUEST)
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> <span class="me">handleValidation</span>(<span class="ty">MethodArgumentNotValidException</span> ex) {
+        <span class="ty">Map</span>&lt;<span class="ty">String</span>,<span class="ty">String</span>&gt; fields = ex.<span class="me">getBindingResult</span>().<span class="me">getFieldErrors</span>()
+            .<span class="me">stream</span>().<span class="me">collect</span>(<span class="ty">Collectors</span>.<span class="me">toMap</span>(
+                <span class="ty">FieldError</span>::<span class="me">getField</span>,
+                <span class="ty">FieldError</span>::<span class="me">getDefaultMessage</span>));
+        <span class="kw">return</span> <span class="ty">ErrorResponse</span>.<span class="me">of</span>(<span class="nu">400</span>, <span class="st">"Validation failed"</span>, fields);
+    }
+
+    <span class="cm">// ── Resource not found → 404 ────────────────────────</span>
+    <span class="an">@ExceptionHandler</span>(<span class="ty">DocumentNotFoundException</span>.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.NOT_FOUND)
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> <span class="me">handleNotFound</span>(<span class="ty">DocumentNotFoundException</span> ex) {
+        <span class="kw">return</span> <span class="ty">ErrorResponse</span>.<span class="me">of</span>(<span class="nu">404</span>, ex.<span class="me">getMessage</span>());
+    }
+
+    <span class="cm">// ── Temporal workflow failure → 502 ─────────────────</span>
+    <span class="an">@ExceptionHandler</span>(<span class="ty">WorkflowException</span>.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.BAD_GATEWAY)
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> <span class="me">handleWorkflow</span>(<span class="ty">WorkflowException</span> ex) {
+        log.<span class="me">error</span>(<span class="st">"Workflow error: {}"</span>, ex.<span class="me">getMessage</span>());
+        <span class="kw">return</span> <span class="ty">ErrorResponse</span>.<span class="me">of</span>(<span class="nu">502</span>, <span class="st">"OCR workflow failed"</span>, ex.<span class="me">getCause</span>().<span class="me">getMessage</span>());
+    }
+
+    <span class="cm">// ── Catch-all → 500 ──────────────────────────────────</span>
+    <span class="an">@ExceptionHandler</span>(<span class="ty">Exception</span>.<span class="kw">class</span>)
+    <span class="an">@ResponseStatus</span>(<span class="ty">HttpStatus</span>.INTERNAL_SERVER_ERROR)
+    <span class="kw">public</span> <span class="ty">ErrorResponse</span> <span class="me">handleAll</span>(<span class="ty">Exception</span> ex, <span class="ty">WebRequest</span> request) {
+        log.<span class="me">error</span>(<span class="st">"Unhandled exception at {}: {}"</span>, request.<span class="me">getDescription</span>(<span class="kw">false</span>), ex.<span class="me">getMessage</span>(), ex);
+        <span class="kw">return</span> <span class="ty">ErrorResponse</span>.<span class="me">of</span>(<span class="nu">500</span>, <span class="st">"Internal server error"</span>);
+    }
+}
+
+<span class="cm">// ── Standardised error envelope ──────────────────────</span>
+<span class="kw">public record</span> <span class="ty">ErrorResponse</span>(
+    <span class="kw">int</span>              status,
+    <span class="ty">String</span>           message,
+    <span class="ty">Instant</span>          timestamp,
+    <span class="ty">Map</span>&lt;<span class="ty">String</span>,<span class="ty">Object</span>&gt; details
 ) {
-    <span class="code-keyword">return</span> <span class="code-type">ResponseEntity</span>.<span class="code-method">ok</span>(service.<span class="code-method">create</span>(req));
+    <span class="kw">static</span> <span class="ty">ErrorResponse</span> <span class="me">of</span>(<span class="kw">int</span> s, <span class="ty">String</span> m) {
+        <span class="kw">return new</span> <span class="ty">ErrorResponse</span>(s, m, <span class="ty">Instant</span>.<span class="me">now</span>(), <span class="ty">Map</span>.<span class="me">of</span>());
+    }
+    <span class="kw">static</span> <span class="ty">ErrorResponse</span> <span class="me">of</span>(<span class="kw">int</span> s, <span class="ty">String</span> m, <span class="ty">Object</span> detail) {
+        <span class="kw">return new</span> <span class="ty">ErrorResponse</span>(s, m, <span class="ty">Instant</span>.<span class="me">now</span>(), <span class="ty">Map</span>.<span class="me">of</span>(<span class="st">"detail"</span>, detail));
+    }
 }</pre>
-      </div>
+
+    <div class="tip-box">✓ Order matters — Spring picks the <b>most specific</b> <code class="il">@ExceptionHandler</code> first. Put catch-all <code class="il">Exception.class</code> last so it doesn't swallow specific cases.</div>
+    <ul class="rlist">
+      <li><div class="ri">!</div> Use <code class="il">@RestControllerAdvice</code> (not <code class="il">@ControllerAdvice</code>) when your controllers are REST APIs — it adds <code class="il">@ResponseBody</code> automatically.</li>
+      <li><div class="ri">!</div> Log the full stack trace only in the catch-all handler. For known exceptions (404, 400) log at WARN or DEBUG — stack traces are expensive and noisy.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ TEMPORAL + OCR PIPELINE ═══════════════════ -->
+<div id="sec-temporal" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-temporal">Temporal · OCR · Elastic</div>
+      <div class="card-title">Temporal Client → Golang OCR Worker → Elasticsearch</div>
+      <div class="card-sub">Large-file streaming · Tesseract OCR · full-text indexing · distributed workflows</div>
+    </div>
+    <button class="btn btn-ghost" onclick="openM('m-temporal')">Full Architecture →</button>
+  </div>
+  <div class="card-body">
+    <p class="desc"><b>Temporal</b> is a durable workflow engine. Your Java service is the <b>client</b> that starts workflows. A <b>Go worker</b> polls Temporal for tasks, runs Tesseract OCR on the file, and indexes results into Elasticsearch. If the worker crashes mid-task, Temporal replays from the last checkpoint — no data loss.</p>
+
+    <!-- ARCHITECTURE DIAGRAM -->
+    <div style="overflow-x:auto;padding:4px 0;">
+    <div class="arch">
+      <div class="arch-box blue">Spring Boot<br>Controller</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">Temporal<br>Client (Java)</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box teal">Temporal<br>Server</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box purple">Go Worker<br>polls tasks</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box orange">Tesseract<br>OCR</div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box green">Elasticsearch<br>Index</div>
+    </div>
     </div>
 
-    <div class="section-divider"></div>
+    <div class="pipe">
+      <div class="pipe-step"><div class="pipe-num">1</div><div><div class="pipe-label">Java: Multipart upload received by controller</div><div class="pipe-sub">File streamed to S3/GCS — only the object key is sent to Temporal (not the raw bytes)</div></div></div>
+      <div class="pipe-step"><div class="pipe-num">2</div><div><div class="pipe-label">Java: Temporal Client starts OcrWorkflow</div><div class="pipe-sub">Passes document metadata + storage key as workflow input (JSON-serialisable)</div></div></div>
+      <div class="pipe-step"><div class="pipe-num">3</div><div><div class="pipe-label">Go Worker: polls Temporal task queue "ocr-queue"</div><div class="pipe-sub">Downloads file from object storage into a temp local path</div></div></div>
+      <div class="pipe-step"><div class="pipe-num">4</div><div><div class="pipe-label">Go Worker: runs Tesseract activity</div><div class="pipe-sub">gosseract library wraps libtesseract — extracts text from PDF/image pages</div></div></div>
+      <div class="pipe-step"><div class="pipe-num">5</div><div><div class="pipe-label">Go Worker: indexes into Elasticsearch</div><div class="pipe-sub">go-elasticsearch client bulk-indexes text chunks with document metadata</div></div></div>
+      <div class="pipe-step"><div class="pipe-num">6</div><div><div class="pipe-label">Java: SSE emitter pushes status to browser</div><div class="pipe-sub">Controller polls workflow status and streams progress events to the client</div></div></div>
+    </div>
 
-    <!-- LOMBOK -->
-    <div id="sec-lombok" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-lombok">Lombok</div>
-          <div class="card-title">Lombok @Builder & @Value</div>
-          <div class="card-subtitle">Annotation-driven builder generation — zero boilerplate</div>
-        </div>
-        <button class="btn-ghost" onclick="openModal('modal-lombok')">Advanced Examples →</button>
-      </div>
-      <div class="card-body">
-        <p class="desc-text"><b>Lombok's @Builder</b> annotation generates a complete inner builder class at compile time. Combined with <b>@Value</b> (immutable class) or <b>@Data</b> (mutable), it eliminates hundreds of lines of repetitive code in large domain models. Every IBM Java microservice at scale uses this pattern.</p>
-
-        <pre class="code-block"><span class="code-comment">// @Value = immutable; @Builder = auto-generated builder</span>
-<span class="code-annotation">@Value</span>
-<span class="code-annotation">@Builder</span>(toBuilder = <span class="code-keyword">true</span>)
-<span class="code-keyword">public class</span> <span class="code-type">DocumentDTO</span> {
-    <span class="code-type">String</span>  id;
-    <span class="code-type">String</span>  name;
-    <span class="code-type">String</span>  type;
-    <span class="code-type">String</span>  status;
-    <span class="code-keyword">boolean</span> valid;
-    <span class="code-type">Instant</span> createdAt;
-
-    <span class="code-comment">// Custom default via @Builder.Default</span>
-    <span class="code-annotation">@Builder.Default</span>
-    <span class="code-type">String</span> status2 = <span class="code-string">"PENDING"</span>;
+    <pre class="cb purple"><span class="cm">// ── Java: Temporal client config (Spring @Bean) ──</span>
+<span class="an">@Bean</span>
+<span class="kw">public</span> <span class="ty">WorkflowClient</span> <span class="me">temporalClient</span>(<span class="an">@Value</span>(<span class="st">"${temporal.address}"</span>) <span class="ty">String</span> addr) {
+    <span class="ty">WorkflowServiceStubs</span> stubs = <span class="ty">WorkflowServiceStubs</span>.<span class="me">newServiceStubs</span>(
+        <span class="ty">WorkflowServiceStubsOptions</span>.<span class="me">newBuilder</span>()
+            .<span class="me">setTarget</span>(addr).<span class="me">build</span>());
+    <span class="kw">return</span> <span class="ty">WorkflowClient</span>.<span class="me">newInstance</span>(stubs);
 }
 
-<span class="code-comment">// Usage — Lombok generates all this for free:</span>
-<span class="code-type">DocumentDTO</span> doc = <span class="code-type">DocumentDTO</span>.<span class="code-method">builder</span>()
-    .<span class="code-method">id</span>(<span class="code-type">UUID</span>.<span class="code-method">randomUUID</span>().toString())
-    .<span class="code-method">name</span>(<span class="code-string">"Q3 Report.pdf"</span>)
-    .<span class="code-method">type</span>(<span class="code-string">"PDF"</span>)
-    .<span class="code-method">valid</span>(<span class="code-keyword">true</span>)
-    .<span class="code-method">createdAt</span>(<span class="code-type">Instant</span>.<span class="code-method">now</span>())
-    .<span class="code-method">build</span>();
-
-<span class="code-comment">// toBuilder = true allows non-destructive copies:</span>
-<span class="code-type">DocumentDTO</span> updated = doc.<span class="code-method">toBuilder</span>().<span class="code-method">status</span>(<span class="code-string">"PROCESSED"</span>).<span class="code-method">build</span>();</pre>
-      </div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- SIMULATION -->
-    <div id="sec-simulation" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-simulation">Interactive</div>
-          <div class="card-title">Live Document Ingestion Simulation</div>
-          <div class="card-subtitle">Simulate the full builder + validation pipeline</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <p class="desc-text">Enter document details to simulate the full ingestion flow: Builder construction → Jakarta validation → ID assignment → status routing.</p>
-
-        <div class="detail-grid" style="margin-bottom:16px;">
-          <div>
-            <div class="sim-label">Document Name</div>
-            <input id="sim-name" class="sim-input" placeholder="e.g. Q3-Financial-Report.pdf">
-          </div>
-          <div>
-            <div class="sim-label">Document Type</div>
-            <select id="sim-type" class="sim-input" style="cursor:pointer;">
-              <option value="PDF">PDF</option>
-              <option value="DOCX">DOCX</option>
-              <option value="TXT">TXT</option>
-            </select>
-          </div>
-        </div>
-        <div class="sim-label">Content Preview (5–5000 chars)</div>
-        <textarea id="sim-content" class="sim-input" rows="3" placeholder="Enter document content for validation..."></textarea>
-
-        <button class="btn-primary" onclick="simulate()">▶ Run Simulation</button>
-
-        <div class="sim-label" style="margin-top:16px;">Builder Output</div>
-        <pre class="sim-output" id="output">// Output will appear here after running...</pre>
-      </div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <!-- QUIZ -->
-    <div id="sec-quiz" class="card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-tag tag-quiz">Assessment</div>
-          <div class="card-title">Knowledge Check</div>
-          <div class="card-subtitle">Test your understanding of the Builder pattern</div>
-        </div>
-      </div>
-      <div class="card-body">
-
-        <p style="font-size:13px; font-weight:600; color:var(--ibm-gray-100); margin-bottom:12px;">Q1 — What is the primary purpose of the Builder pattern?</p>
-        <label class="quiz-option"><input type="radio" name="q1" value="a"> Enforce security policies on object fields</label>
-        <label class="quiz-option"><input type="radio" name="q1" value="b"> Provide a fluent, readable way to construct complex objects step-by-step</label>
-        <label class="quiz-option"><input type="radio" name="q1" value="c"> Replace dependency injection in Spring applications</label>
-
-        <p style="font-size:13px; font-weight:600; color:var(--ibm-gray-100); margin:16px 0 12px;">Q2 — What does Lombok's <code style="font-family:IBM Plex Mono;font-size:12px">toBuilder = true</code> enable?</p>
-        <label class="quiz-option"><input type="radio" name="q2" value="a"> Creating a new builder from an existing object instance for non-destructive copies</label>
-        <label class="quiz-option"><input type="radio" name="q2" value="b"> Automatically converting the object to JSON</label>
-        <label class="quiz-option"><input type="radio" name="q2" value="c"> Adding thread-safety to the builder class</label>
-
-        <p style="font-size:13px; font-weight:600; color:var(--ibm-gray-100); margin:16px 0 12px;">Q3 — In Jakarta Validation, which annotation prevents a string field from being null OR blank?</p>
-        <label class="quiz-option"><input type="radio" name="q3" value="a">@NotNull</label>
-        <label class="quiz-option"><input type="radio" name="q3" value="b">@NotEmpty</label>
-        <label class="quiz-option"><input type="radio" name="q3" value="c">@NotBlank</label>
-
-        <button class="btn-green" onclick="checkQuiz()" style="margin-top:16px;">Check Answers</button>
-        <div id="quizOut" class="quiz-result"></div>
-      </div>
-    </div>
-
-  </div><!-- /content -->
-</div><!-- /main-wrapper -->
-
-
-<!-- ============================================================ MODALS ============================================================ -->
-
-<!-- OVERVIEW MODAL -->
-<div id="modal-overview" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">Builder Pattern — Advanced Deep Dive</span>
-      <button class="modal-close" onclick="closeModal('modal-overview')">×</button>
-    </div>
-    <div class="modal-body">
-
-      <div class="modal-tabs">
-        <div class="modal-tab active" onclick="switchTab('ov', 'patterns')">Patterns</div>
-        <div class="modal-tab" onclick="switchTab('ov', 'stepbuilder')">Step Builder</div>
-        <div class="modal-tab" onclick="switchTab('ov', 'pitfalls')">Pitfalls</div>
-      </div>
-
-      <div id="ov-patterns" class="modal-tab-panel active">
-        <div class="modal-section">
-          <div class="modal-section-title">Telescoping Constructor Anti-Pattern</div>
-          <p class="modal-text">The problem Builder solves is commonly called the <b>telescoping constructor anti-pattern</b> — where you need multiple constructor overloads for every combination of optional parameters.</p>
-          <pre class="code-block" style="font-size:11.5px;"><span class="code-comment">// BEFORE — telescoping constructors (anti-pattern)</span>
-<span class="code-keyword">public</span> <span class="code-type">Document</span>(<span class="code-type">String</span> id, <span class="code-type">String</span> name) { ... }
-<span class="code-keyword">public</span> <span class="code-type">Document</span>(<span class="code-type">String</span> id, <span class="code-type">String</span> name, <span class="code-type">String</span> type) { ... }
-<span class="code-keyword">public</span> <span class="code-type">Document</span>(<span class="code-type">String</span> id, <span class="code-type">String</span> name, <span class="code-type">String</span> type, <span class="code-type">String</span> status) { ... }
-<span class="code-comment">// Grows infinitely for each new optional field</span>
-
-<span class="code-comment">// AFTER — single builder, readable, extensible</span>
-<span class="code-type">Document</span> doc = <span class="code-type">Document</span>.<span class="code-method">builder</span>()
-    .<span class="code-method">id</span>(<span class="code-string">"doc-001"</span>)
-    .<span class="code-method">name</span>(<span class="code-string">"Report.pdf"</span>)
-    .<span class="code-method">build</span>();</pre>
-        </div>
-        <div class="modal-section">
-          <div class="modal-section-title">Generic Builder Pattern (Reusable)</div>
-          <pre class="code-block" style="font-size:11.5px;"><span class="code-keyword">public abstract class</span> <span class="code-type">AbstractBuilder</span>&lt;<span class="code-type">T</span>, <span class="code-type">B</span> <span class="code-keyword">extends</span> <span class="code-type">AbstractBuilder</span>&lt;<span class="code-type">T</span>,<span class="code-type">B</span>&gt;&gt; {
-    <span class="code-annotation">@SuppressWarnings</span>(<span class="code-string">"unchecked"</span>)
-    <span class="code-keyword">protected</span> <span class="code-type">B</span> <span class="code-method">self</span>() { <span class="code-keyword">return</span> (<span class="code-type">B</span>) <span class="code-keyword">this</span>; }
-    <span class="code-keyword">public abstract</span> <span class="code-type">T</span> <span class="code-method">build</span>();
+<span class="cm">// ── Workflow interface (shared contract) ──</span>
+<span class="an">@WorkflowInterface</span>
+<span class="kw">public interface</span> <span class="ty">OcrWorkflow</span> {
+    <span class="an">@WorkflowMethod</span>
+    <span class="ty">OcrResult</span> <span class="me">processDocument</span>(<span class="ty">OcrRequest</span> req);
 }
 
-<span class="code-keyword">public class</span> <span class="code-type">ReportBuilder</span> <span class="code-keyword">extends</span> <span class="code-type">AbstractBuilder</span>&lt;<span class="code-type">Report</span>, <span class="code-type">ReportBuilder</span>&gt; {
-    <span class="code-keyword">private</span> <span class="code-type">String</span> title;
-    <span class="code-keyword">public</span> <span class="code-type">ReportBuilder</span> <span class="code-method">title</span>(<span class="code-type">String</span> t) { <span class="code-keyword">this</span>.title = t; <span class="code-keyword">return</span> <span class="code-method">self</span>(); }
-    <span class="code-keyword">public</span> <span class="code-type">Report</span> <span class="code-method">build</span>()           { <span class="code-keyword">return new</span> <span class="code-type">Report</span>(title); }
-}</pre>
-        </div>
-        <div class="key-reminder"><b>Key Reminder:</b> The <code style="font-family:IBM Plex Mono;font-size:12px">self()</code> trick in generic builders avoids unchecked casts everywhere and keeps chaining correct through inheritance hierarchies.</div>
-      </div>
+<span class="cm">// ── Service: start workflow + stream progress ──</span>
+<span class="an">@Service</span> <span class="an">@RequiredArgsConstructor</span>
+<span class="kw">public class</span> <span class="ty">TemporalDocumentService</span> {
 
-      <div id="ov-stepbuilder" class="modal-tab-panel">
-        <div class="modal-section">
-          <div class="modal-section-title">Step Builder — Enforcing Required Fields at Compile Time</div>
-          <p class="modal-text">The <b>Step Builder</b> variant uses separate interfaces per step to enforce that required fields are set before optional ones — a compile-time guarantee rather than a runtime exception.</p>
-          <pre class="code-block" style="font-size:11.5px;"><span class="code-comment">// Each step interface returns the NEXT step</span>
-<span class="code-keyword">public interface</span> <span class="code-type">IdStep</span>   { <span class="code-type">NameStep</span> <span class="code-method">id</span>(<span class="code-type">String</span> id); }
-<span class="code-keyword">public interface</span> <span class="code-type">NameStep</span> { <span class="code-type">TypeStep</span> <span class="code-method">name</span>(<span class="code-type">String</span> name); }
-<span class="code-keyword">public interface</span> <span class="code-type">TypeStep</span> { <span class="code-type">BuildStep</span> <span class="code-method">type</span>(<span class="code-type">String</span> type); }
-<span class="code-keyword">public interface</span> <span class="code-type">BuildStep</span> {
-    <span class="code-type">BuildStep</span> <span class="code-method">status</span>(<span class="code-type">String</span> s);  <span class="code-comment">// optional</span>
-    <span class="code-type">Document</span>  <span class="code-method">build</span>();
+    <span class="kw">private final</span> <span class="ty">WorkflowClient</span>    client;
+    <span class="kw">private final</span> <span class="ty">StorageService</span>    storage;
+    <span class="kw">private final</span> <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">SseEmitter</span>&gt; emitters = <span class="kw">new</span> <span class="ty">ConcurrentHashMap</span>&lt;&gt;();
+
+    <span class="kw">public</span> <span class="ty">String</span> <span class="me">startOcrWorkflow</span>(<span class="ty">DocumentRequest</span> req, <span class="ty">MultipartFile</span> file) {
+        <span class="cm">// Stream upload to object storage first</span>
+        <span class="ty">String</span> storageKey = storage.<span class="me">uploadStreamed</span>(file);
+
+        <span class="ty">OcrRequest</span> input = <span class="ty">OcrRequest</span>.<span class="me">builder</span>()
+            .<span class="me">documentName</span>(req.name())
+            .<span class="me">storageKey</span>(storageKey)
+            .<span class="me">type</span>(req.type())
+            .<span class="me">build</span>();
+
+        <span class="ty">OcrWorkflow</span> wf = client.<span class="me">newWorkflowStub</span>(<span class="ty">OcrWorkflow</span>.<span class="kw">class</span>,
+            <span class="ty">WorkflowOptions</span>.<span class="me">newBuilder</span>()
+                .<span class="me">setTaskQueue</span>(<span class="st">"ocr-queue"</span>)
+                .<span class="me">setWorkflowExecutionTimeout</span>(<span class="ty">Duration</span>.<span class="me">ofMinutes</span>(<span class="nu">30</span>))
+                .<span class="me">build</span>());
+
+        <span class="ty">String</span> workflowId = <span class="ty">WorkflowClient</span>.<span class="me">start</span>(wf::<span class="me">processDocument</span>, input);
+
+        <span class="cm">// Async poll loop — push SSE events to connected browsers</span>
+        <span class="me">pollAndEmit</span>(workflowId);
+        <span class="kw">return</span> workflowId;
+    }
+
+    <span class="an">@Async</span>(<span class="st">"docExecutor"</span>)
+    <span class="kw">public void</span> <span class="me">pollAndEmit</span>(<span class="ty">String</span> wfId) {
+        <span class="ty">SseEmitter</span> emitter = emitters.<span class="me">get</span>(wfId);
+        <span class="kw">if</span> (emitter == <span class="kw">null</span>) <span class="kw">return</span>;
+        <span class="kw">while</span> (<span class="kw">true</span>) {
+            <span class="ty">WorkflowExecutionInfo</span> info = client.<span class="me">getWorkflowHistory</span>(wfId);
+            emitter.<span class="me">send</span>(<span class="ty">SseEmitter</span>.<span class="me">event</span>().<span class="me">data</span>(info.<span class="me">getStatus</span>()));
+            <span class="kw">if</span> (info.<span class="me">isCompleted</span>()) { emitter.<span class="me">complete</span>(); <span class="kw">break</span>; }
+            <span class="ty">Thread</span>.<span class="me">sleep</span>(<span class="nu">2000</span>);
+        }
+    }
+}</pre>
+
+    <pre class="cb green"><span class="cm">// ── Go Worker: Temporal activities + Tesseract + Elasticsearch ──</span>
+
+<span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="st">"context"</span>
+    <span class="st">"github.com/otiai10/gosseract/v2"</span>   <span class="cm">// Tesseract bindings</span>
+    <span class="st">"github.com/elastic/go-elasticsearch/v8"</span>
+    <span class="st">"go.temporal.io/sdk/activity"</span>
+    <span class="st">"go.temporal.io/sdk/worker"</span>
+    <span class="st">"go.temporal.io/sdk/workflow"</span>
+)
+
+<span class="cm">// ── Activity: OCR extraction ──────────────────────────────────</span>
+<span class="kw">func</span> <span class="me">ExtractTextActivity</span>(ctx context.Context, req <span class="ty">OcrRequest</span>) (<span class="ty">string</span>, error) {
+    activity.RecordHeartbeat(ctx, <span class="st">"downloading"</span>)   <span class="cm">// timeout reset</span>
+    filePath := downloadFromStorage(req.StorageKey)
+
+    client := gosseract.NewClient()
+    defer client.Close()
+    client.SetImage(filePath)
+    client.SetLanguage(<span class="st">"eng"</span>)
+    text, err := client.Text()
+    <span class="kw">if</span> err != nil { return <span class="st">""</span>, err }
+    activity.RecordHeartbeat(ctx, <span class="st">"ocr-done"</span>)
+    return text, nil
 }
 
-<span class="code-comment">// Compiler forces correct order — missing id() won't compile</span>
-<span class="code-type">Document</span> d = <span class="code-type">DocumentStepBuilder</span>
-    .<span class="code-method">newBuilder</span>()   <span class="code-comment">// returns IdStep</span>
-    .<span class="code-method">id</span>(<span class="code-string">"doc-1"</span>)    <span class="code-comment">// returns NameStep</span>
-    .<span class="code-method">name</span>(<span class="code-string">"file"</span>)  <span class="code-comment">// returns TypeStep</span>
-    .<span class="code-method">type</span>(<span class="code-string">"PDF"</span>)   <span class="code-comment">// returns BuildStep</span>
-    .<span class="code-method">build</span>();</pre>
-          <div class="tip-box">✓ <b>Use Step Builder</b> when certain fields are truly required and you want compile-time enforcement rather than relying on runtime validation in build().</div>
-        </div>
-      </div>
+<span class="cm">// ── Activity: Elasticsearch indexing ─────────────────────────</span>
+<span class="kw">func</span> <span class="me">IndexDocumentActivity</span>(ctx context.Context, doc <span class="ty">IndexPayload</span>) error {
+    es, _ := elasticsearch.NewDefaultClient()
+    body, _ := json.Marshal(doc)
+    res, err := es.Index(<span class="st">"documents"</span>,
+        bytes.NewReader(body),
+        es.Index.WithDocumentID(doc.ID),
+        es.Index.WithRefresh(<span class="st">"wait_for"</span>),
+    )
+    defer res.Body.Close()
+    return err
+}
 
-      <div id="ov-pitfalls" class="modal-tab-panel">
-        <div class="modal-section">
-          <div class="modal-section-title">Common Pitfalls & How to Avoid Them</div>
-          <div class="warning-box" style="margin-bottom:10px;">⚠ <b>Pitfall 1 — Shared Builder Instance:</b> Never store a builder as a field and reuse it across threads. Builders are NOT thread-safe by default.</div>
-          <div class="warning-box" style="margin-bottom:10px;">⚠ <b>Pitfall 2 — Silent Null Fields:</b> If you don't validate in build(), null fields silently produce broken objects. Always assert required fields.</div>
-          <div class="warning-box" style="margin-bottom:10px;">⚠ <b>Pitfall 3 — Mutable Collections:</b> If a field is a List, copy it defensively: <code style="font-family:IBM Plex Mono;font-size:12px">List.copyOf(tags)</code> in build().</div>
-          <div class="warning-box">⚠ <b>Pitfall 4 — @Builder with @NonNull (Lombok):</b> Lombok's @NonNull generates null checks in the setter, but only if you also use @Builder — make sure both annotations are present.</div>
-        </div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-comment">// Defensive copy for collection fields</span>
-<span class="code-keyword">public</span> <span class="code-type">Document</span> <span class="code-method">build</span>() {
-    <span class="code-type">Objects</span>.<span class="code-method">requireNonNull</span>(name, <span class="code-string">"name"</span>);
-    <span class="code-type">Objects</span>.<span class="code-method">requireNonNull</span>(type, <span class="code-string">"type"</span>);
-    <span class="code-type">List</span>&lt;<span class="code-type">String</span>&gt; safeTags = tags == <span class="code-keyword">null</span>
-        ? <span class="code-type">List</span>.<span class="code-method">of</span>()
-        : <span class="code-type">List</span>.<span class="code-method">copyOf</span>(tags);  <span class="code-comment">// immutable copy</span>
-    <span class="code-keyword">return new</span> <span class="code-type">Document</span>(id, name, type, status, valid, safeTags);
+<span class="cm">// ── Workflow: orchestrates activities with retries ────────────</span>
+<span class="kw">func</span> <span class="me">OcrWorkflow</span>(ctx workflow.Context, req <span class="ty">OcrRequest</span>) (<span class="ty">OcrResult</span>, error) {
+    retryPolicy := &temporal.RetryPolicy{
+        MaximumAttempts: <span class="nu">3</span>,
+        InitialInterval: time.Second * <span class="nu">5</span>,
+    }
+    ao := workflow.ActivityOptions{
+        StartToCloseTimeout: time.Minute * <span class="nu">10</span>,
+        RetryPolicy:         retryPolicy,
+    }
+    ctx = workflow.WithActivityOptions(ctx, ao)
+
+    var text string
+    err := workflow.ExecuteActivity(ctx, ExtractTextActivity, req).Get(ctx, &text)
+    <span class="kw">if</span> err != nil { return OcrResult{}, err }
+
+    payload := IndexPayload{ID: req.ID, Name: req.Name, Text: text}
+    err = workflow.ExecuteActivity(ctx, IndexDocumentActivity, payload).Get(ctx, nil)
+    return OcrResult{ID: req.ID, TextLength: len(text)}, err
+}
+
+<span class="cm">// ── main: register worker ─────────────────────────────────────</span>
+<span class="kw">func</span> main() {
+    c, _ := client.Dial(client.Options{HostPort: <span class="st">"temporal:7233"</span>})
+    defer c.Close()
+    w := worker.New(c, <span class="st">"ocr-queue"</span>, worker.Options{MaxConcurrentActivityExecutionSize: <span class="nu">4</span>})
+    w.RegisterWorkflow(OcrWorkflow)
+    w.RegisterActivity(ExtractTextActivity)
+    w.RegisterActivity(IndexDocumentActivity)
+    w.Run(worker.InterruptCh())
 }</pre>
+
+    <ul class="rlist">
+      <li><div class="ri">!</div> <b>Never pass raw file bytes through Temporal.</b> Workflow inputs are persisted to Temporal's DB — large payloads will OOM and timeout. Stream to object storage first; pass only the key.</li>
+      <li><div class="ri">!</div> <b>Call <code class="il">activity.RecordHeartbeat()</code></b> inside long-running activities (OCR can take minutes). Temporal uses heartbeat to detect stuck workers and trigger retries.</li>
+      <li><div class="ri">!</div> Go activities are <b>retried independently</b> — each activity is idempotent. Use the document ID as the Elasticsearch document ID so re-indexing is a no-op.</li>
+    </ul>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ SIMULATION ═══════════════════ -->
+<div id="sec-sim" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-sim">Interactive</div>
+      <div class="card-title">Live Pipeline Simulation</div>
+      <div class="card-sub">Simulate the full Java → Temporal → OCR → Elasticsearch pipeline</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="dgrid">
+      <div>
+        <div class="s-lbl">Document Name</div>
+        <input id="sName" class="sim-in" placeholder="e.g. Q3-Annual-Report.pdf">
+        <div class="s-lbl">Document Type</div>
+        <select id="sType" class="sim-in" style="cursor:pointer">
+          <option>PDF</option><option>DOCX</option><option>TXT</option>
+        </select>
+      </div>
+      <div>
+        <div class="s-lbl">Content Preview (5–5000 chars)</div>
+        <textarea id="sContent" class="sim-in" rows="4" placeholder="Paste or type some document content..."></textarea>
       </div>
     </div>
+    <button class="btn btn-blue" onclick="runSim()" id="simBtn">▶ Start Pipeline</button>
+    <div class="s-lbl" style="margin-top:14px;">Pipeline Output</div>
+    <pre class="sim-out" id="simOut">// Pipeline output will appear here...</pre>
+  </div>
+</div><div class="gap"></div>
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div id="sec-quiz" class="card">
+  <div class="card-header">
+    <div class="card-hl">
+      <div class="ctag t-quiz">Assessment</div>
+      <div class="card-title">Knowledge Quiz</div>
+      <div class="card-sub">5 questions covering all topics</div>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <p style="font-size:13px;font-weight:600;color:var(--gray-100);margin-bottom:10px;">Q1 — What is the primary purpose of the Builder pattern?</p>
+    <label class="q-opt"><input type="radio" name="q1" value="a"> Enforce security policies on fields</label>
+    <label class="q-opt"><input type="radio" name="q1" value="b"> Provide a fluent, readable way to construct complex objects step-by-step</label>
+    <label class="q-opt"><input type="radio" name="q1" value="c"> Replace dependency injection in Spring</label>
+
+    <p style="font-size:13px;font-weight:600;color:var(--gray-100);margin:14px 0 10px;">Q2 — What does <code class="il">CompletableFuture.thenCompose()</code> do differently from <code class="il">thenApply()</code>?</p>
+    <label class="q-opt"><input type="radio" name="q2" value="a"> It runs the function on the main thread instead of the executor</label>
+    <label class="q-opt"><input type="radio" name="q2" value="b"> It flattens a function that returns another CompletableFuture, avoiding nested futures</label>
+    <label class="q-opt"><input type="radio" name="q2" value="c"> It adds a timeout to the future chain</label>
+
+    <p style="font-size:13px;font-weight:600;color:var(--gray-100);margin:14px 0 10px;">Q3 — Why should you <em>never</em> pass raw file bytes as a Temporal workflow input?</p>
+    <label class="q-opt"><input type="radio" name="q3" value="a"> Temporal only accepts string arguments</label>
+    <label class="q-opt"><input type="radio" name="q3" value="b"> Workflow inputs are persisted to Temporal's DB — large payloads cause OOM and timeouts</label>
+    <label class="q-opt"><input type="radio" name="q3" value="c"> The Go worker can't deserialise Java byte arrays</label>
+
+    <p style="font-size:13px;font-weight:600;color:var(--gray-100);margin:14px 0 10px;">Q4 — What is the difference between <code class="il">@Component</code> and <code class="il">@Bean</code>?</p>
+    <label class="q-opt"><input type="radio" name="q4" value="a"> @Component is for test classes; @Bean is for production</label>
+    <label class="q-opt"><input type="radio" name="q4" value="b"> @Component annotates your own classes for scanning; @Bean is a method in @Configuration for registering third-party objects</label>
+    <label class="q-opt"><input type="radio" name="q4" value="c"> They are completely identical</label>
+
+    <p style="font-size:13px;font-weight:600;color:var(--gray-100);margin:14px 0 10px;">Q5 — What breaks <code class="il">@Async</code> in Spring and makes it run synchronously?</p>
+    <label class="q-opt"><input type="radio" name="q5" value="a"> Using it on a private method</label>
+    <label class="q-opt"><input type="radio" name="q5" value="b"> Calling the @Async method from within the same class (self-invocation bypasses the proxy)</label>
+    <label class="q-opt"><input type="radio" name="q5" value="c"> Not declaring @EnableAsync on every controller class</label>
+
+    <button class="btn btn-green" onclick="checkQuiz()" style="margin-top:14px;">Check Answers</button>
+    <div id="qOut" class="q-res"></div>
   </div>
 </div>
 
-<!-- BUILDER MODAL -->
-<div id="modal-builder" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">Builder Interface — Advanced Examples</span>
-      <button class="modal-close" onclick="closeModal('modal-builder')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section">
-        <div class="modal-section-title">Builder with Conditional Logic</div>
-        <p class="modal-text">Builders can encapsulate complex conditional logic before constructing the final object, keeping that complexity out of callers.</p>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-keyword">public</span> <span class="code-type">Document</span> <span class="code-method">build</span>() {
-    <span class="code-comment">// Auto-generate ID if not provided</span>
-    <span class="code-keyword">if</span> (id == <span class="code-keyword">null</span>)
-        id = <span class="code-type">UUID</span>.<span class="code-method">randomUUID</span>().toString();
+</div><!-- /content -->
+</div><!-- /main-wrap -->
 
-    <span class="code-comment">// Infer type from name extension if not set</span>
-    <span class="code-keyword">if</span> (type == <span class="code-keyword">null</span> && name != <span class="code-keyword">null</span>) {
-        type = name.endsWith(<span class="code-string">".pdf"</span>)  ? <span class="code-string">"PDF"</span>  :
-               name.endsWith(<span class="code-string">".docx"</span>) ? <span class="code-string">"DOCX"</span> : <span class="code-string">"UNKNOWN"</span>;
-    }
 
-    <span class="code-comment">// Validation gate</span>
-    <span class="code-type">Objects</span>.<span class="code-method">requireNonNull</span>(name, <span class="code-string">"name is required"</span>);
-    <span class="code-keyword">if</span> (<span class="code-string">"UNKNOWN"</span>.equals(type))
-        <span class="code-keyword">throw new</span> <span class="code-type">IllegalStateException</span>(<span class="code-string">"Unsupported document type"</span>);
+<!-- ═══════════════════════════════ MODALS ═══════════════════════════════ -->
 
-    <span class="code-keyword">return new</span> <span class="code-type">Document</span>(id, name, type,
-        status != <span class="code-keyword">null</span> ? status : <span class="code-string">"RECEIVED"</span>, valid);
-}</pre>
+<!-- OVERVIEW MODAL -->
+<div id="m-overview" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Builder Pattern — Step Builder & Generic Builder</div><div class="mhead-sub">Advanced compile-time safety patterns</div></div><button class="mclose" onclick="closeM('m-overview')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Step Builder — Compile-Time Required Field Enforcement</div>
+        <p class="mtxt">The <b>Step Builder</b> uses separate interfaces per required field. Skipping a required field is a <b>compile error</b>, not a runtime exception.</p>
+        <pre class="cb" style="font-size:11.5px;"><span class="kw">public interface</span> <span class="ty">IdStep</span>    { <span class="ty">NameStep</span>  <span class="me">id</span>(<span class="ty">String</span> id); }
+<span class="kw">public interface</span> <span class="ty">NameStep</span>  { <span class="ty">TypeStep</span>  <span class="me">name</span>(<span class="ty">String</span> name); }
+<span class="kw">public interface</span> <span class="ty">TypeStep</span>  { <span class="ty">BuildStep</span> <span class="me">type</span>(<span class="ty">String</span> type); }
+<span class="kw">public interface</span> <span class="ty">BuildStep</span> {
+    <span class="ty">BuildStep</span> <span class="me">status</span>(<span class="ty">String</span> s); <span class="cm">// optional</span>
+    <span class="ty">Document</span>  <span class="me">build</span>();
+}
+<span class="cm">// Usage — wrong order = compile error</span>
+<span class="ty">Document</span> d = <span class="ty">DocStepBuilder</span>.<span class="me">newBuilder</span>().<span class="me">id</span>(<span class="st">"x"</span>).<span class="me">name</span>(<span class="st">"f"</span>).<span class="me">type</span>(<span class="st">"PDF"</span>).<span class="me">build</span>();</pre>
       </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Builder Pattern in Spring Services</div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-annotation">@Service</span>
-<span class="code-keyword">public class</span> <span class="code-type">DocumentService</span> {
-
-    <span class="code-keyword">public</span> <span class="code-type">Document</span> <span class="code-method">ingest</span>(<span class="code-type">DocumentRequest</span> req) {
-        <span class="code-keyword">return</span> <span class="code-type">Document</span>.<span class="code-method">builder</span>()
-            .<span class="code-method">id</span>(<span class="code-type">UUID</span>.<span class="code-method">randomUUID</span>().toString())
-            .<span class="code-method">name</span>(req.name())
-            .<span class="code-method">type</span>(req.type())
-            .<span class="code-method">status</span>(<span class="code-string">"RECEIVED"</span>)
-            .<span class="code-method">valid</span>(<span class="code-method">isValid</span>(req))
-            .<span class="code-method">build</span>();
-    }
-
-    <span class="code-keyword">private boolean</span> <span class="code-method">isValid</span>(<span class="code-type">DocumentRequest</span> r) {
-        <span class="code-keyword">return</span> r.name() != <span class="code-keyword">null</span>
-            && !r.name().isBlank()
-            && r.content().length() >= 5;
-    }
+      <div class="msec"><div class="msec-title">Generic Abstract Builder (inheritance-safe)</div>
+        <pre class="cb" style="font-size:11.5px;"><span class="kw">public abstract class</span> <span class="ty">AbstractBuilder</span>&lt;<span class="ty">T</span>, <span class="ty">B</span> <span class="kw">extends</span> <span class="ty">AbstractBuilder</span>&lt;<span class="ty">T</span>,<span class="ty">B</span>&gt;&gt; {
+    <span class="an">@SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+    <span class="kw">protected</span> <span class="ty">B</span> <span class="me">self</span>() { <span class="kw">return</span> (<span class="ty">B</span>) <span class="kw">this</span>; }
+    <span class="kw">public abstract</span> <span class="ty">T</span> <span class="me">build</span>();
+}
+<span class="kw">public class</span> <span class="ty">DocBuilder</span> <span class="kw">extends</span> <span class="ty">AbstractBuilder</span>&lt;<span class="ty">Document</span>,<span class="ty">DocBuilder</span>&gt; {
+    <span class="kw">private</span> <span class="ty">String</span> name;
+    <span class="kw">public</span> <span class="ty">DocBuilder</span> <span class="me">name</span>(<span class="ty">String</span> n) { <span class="kw">this</span>.name=n; <span class="kw">return</span> <span class="me">self</span>(); }
+    <span class="kw">public</span> <span class="ty">Document</span> <span class="me">build</span>() { <span class="kw">return new</span> <span class="ty">Document</span>(name); }
 }</pre>
+        <div class="key-box"><b>Key:</b> The <code class="il">self()</code> trick keeps the return type as the concrete subclass, so chained calls return the right type through inheritance.</div>
       </div>
-      <div class="key-reminder"><b>Key Reminder:</b> Keep business logic (like isValid) out of the Builder itself. The Builder handles construction; the Service handles business rules.</div>
     </div>
   </div>
 </div>
 
 <!-- DTO MODAL -->
-<div id="modal-dto" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">Java Records — Advanced Patterns</span>
-      <button class="modal-close" onclick="closeModal('modal-dto')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section">
-        <div class="modal-section-title">Records vs. Traditional POJOs</div>
-        <div class="detail-grid">
-          <div class="detail-card">
-            <div class="detail-card-label">Traditional POJO (150+ lines)</div>
-            <div class="detail-card-text">Requires manual: constructor, getters, equals(), hashCode(), toString(), copy constructors, builder inner class.</div>
-          </div>
-          <div class="detail-card">
-            <div class="detail-card-label">Java 21 Record (5 lines)</div>
-            <div class="detail-card-text">All of the above generated automatically. Immutable by default. Works perfectly with Jackson, JPA projections, and Spring.</div>
-          </div>
-        </div>
+<div id="m-dto" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Java Records — Pattern Matching & Sealed Types</div><div class="mhead-sub">Java 21 advanced features</div></div><button class="mclose" onclick="closeM('m-dto')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Pattern Matching with Records (Java 21)</div>
+        <pre class="cb" style="font-size:11.5px;"><span class="cm">// Sealed interface for document types</span>
+<span class="kw">public sealed interface</span> <span class="ty">DocEvent</span>
+    <span class="kw">permits</span> <span class="ty">Received</span>, <span class="ty">Processing</span>, <span class="ty">Indexed</span>, <span class="ty">Failed</span> {}
+
+<span class="kw">public record</span> <span class="ty">Received</span>  (<span class="ty">String</span> id, <span class="ty">Instant</span> at) <span class="kw">implements</span> <span class="ty">DocEvent</span> {}
+<span class="kw">public record</span> <span class="ty">Processing</span>(<span class="ty">String</span> id, <span class="ty">String</span> step) <span class="kw">implements</span> <span class="ty">DocEvent</span> {}
+<span class="kw">public record</span> <span class="ty">Indexed</span>   (<span class="ty">String</span> id, <span class="kw">int</span> chars)   <span class="kw">implements</span> <span class="ty">DocEvent</span> {}
+<span class="kw">public record</span> <span class="ty">Failed</span>    (<span class="ty">String</span> id, <span class="ty">String</span> err)  <span class="kw">implements</span> <span class="ty">DocEvent</span> {}
+
+<span class="cm">// Java 21 switch expression — compiler warns on missing cases</span>
+<span class="ty">String</span> message = <span class="kw">switch</span> (event) {
+    <span class="kw">case</span> <span class="ty">Received</span>(var id, var at)    -&gt; <span class="st">"Received "</span> + id + <span class="st">" at "</span> + at;
+    <span class="kw">case</span> <span class="ty">Processing</span>(var id, var step) -&gt; <span class="st">"Processing "</span> + id + <span class="st">": "</span> + step;
+    <span class="kw">case</span> <span class="ty">Indexed</span>(var id, var chars)   -&gt; <span class="st">"Indexed "</span> + id + <span class="st">" ("</span> + chars + <span class="st">" chars)"</span>;
+    <span class="kw">case</span> <span class="ty">Failed</span>(var id, var err)      -&gt; <span class="st">"FAILED "</span> + id + <span class="st">": "</span> + err;
+};</pre>
+        <div class="tip-box">✓ Sealed + record types form an exhaustive type hierarchy. The compiler enforces that every switch covers all cases — no silent missing branches.</div>
       </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Record with Custom Accessor & Derived Field</div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-keyword">public record</span> <span class="code-type">Document</span>(
-    <span class="code-type">String</span>   id,
-    <span class="code-type">String</span>   name,
-    <span class="code-type">String</span>   type,
-    <span class="code-type">String</span>   status,
-    <span class="code-keyword">boolean</span>  valid,
-    <span class="code-type">Instant</span>  createdAt
-) {
-    <span class="code-comment">// Compact constructor — runs before auto-assignment</span>
-    <span class="code-keyword">public</span> <span class="code-type">Document</span> {
-        <span class="code-type">Objects</span>.<span class="code-method">requireNonNull</span>(id, <span class="code-string">"id"</span>);
-        name = name == <span class="code-keyword">null</span> ? <span class="code-string">"Untitled"</span> : name.strip();
-        createdAt = createdAt != <span class="code-keyword">null</span> ? createdAt : <span class="code-type">Instant</span>.<span class="code-method">now</span>();
-    }
-
-    <span class="code-comment">// Custom accessor (overrides generated one)</span>
-    <span class="code-keyword">public</span> <span class="code-type">String</span> <span class="code-method">name</span>() { <span class="code-keyword">return</span> name.toUpperCase(); }
-
-    <span class="code-comment">// Derived / computed method</span>
-    <span class="code-keyword">public boolean</span> <span class="code-method">isProcessable</span>() {
-        <span class="code-keyword">return</span> valid && <span class="code-string">"RECEIVED"</span>.equals(status);
-    }
-
-    <span class="code-comment">// Static factory</span>
-    <span class="code-keyword">public static</span> <span class="code-type">DocumentBuilder</span> <span class="code-method">builder</span>() {
-        <span class="code-keyword">return new</span> <span class="code-type">DefaultBuilder</span>();
-    }
-}</pre>
-      </div>
-      <div class="key-reminder"><b>Key Reminder:</b> Records work natively with <b>pattern matching</b> in Java 21 switch expressions and instanceof checks — ideal for routing logic based on document type.</div>
-      <div class="warning-box" style="margin-top:10px;">⚠ Records cannot extend classes (they implicitly extend java.lang.Record). Use interfaces for polymorphism with records.</div>
     </div>
   </div>
 </div>
 
 <!-- VALIDATION MODAL -->
-<div id="modal-validation" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">Jakarta Validation — Advanced Constraints</span>
-      <button class="modal-close" onclick="closeModal('modal-validation')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section">
-        <div class="modal-section-title">Custom Constraint Annotation</div>
-        <p class="modal-text">When built-in annotations aren't enough, define your own <b>custom constraint</b> — for example, validating that a document name matches an allowed naming convention.</p>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-comment">// 1. Define the annotation</span>
-<span class="code-annotation">@Documented</span>
-<span class="code-annotation">@Constraint</span>(validatedBy = ValidDocNameValidator.<span class="code-keyword">class</span>)
-<span class="code-annotation">@Target</span>({<span class="code-type">ElementType</span>.FIELD})
-<span class="code-annotation">@Retention</span>(<span class="code-type">RetentionPolicy</span>.RUNTIME)
-<span class="code-keyword">public @interface</span> <span class="code-type">ValidDocName</span> {
-    <span class="code-type">String</span>   message()  <span class="code-keyword">default</span> <span class="code-string">"Invalid doc name format"</span>;
-    <span class="code-type">Class</span>[]  groups()   <span class="code-keyword">default</span> {};
-    <span class="code-type">Class</span>[]  payload()  <span class="code-keyword">default</span> {};
+<div id="m-validation" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Custom Validator + Cross-Field Validation</div></div><button class="mclose" onclick="closeM('m-validation')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Custom Constraint — @ValidDocName</div>
+        <pre class="cb" style="font-size:11.5px;"><span class="an">@Documented</span>
+<span class="an">@Constraint</span>(validatedBy = <span class="ty">ValidDocNameValidator</span>.<span class="kw">class</span>)
+<span class="an">@Target</span>({<span class="ty">ElementType</span>.FIELD})
+<span class="an">@Retention</span>(<span class="ty">RetentionPolicy</span>.RUNTIME)
+<span class="kw">public @interface</span> <span class="ty">ValidDocName</span> {
+    <span class="ty">String</span>  message() <span class="kw">default</span> <span class="st">"Invalid document name"</span>;
+    <span class="ty">Class</span>[] groups()  <span class="kw">default</span> {};
+    <span class="ty">Class</span>[] payload() <span class="kw">default</span> {};
 }
-
-<span class="code-comment">// 2. Implement the validator</span>
-<span class="code-keyword">public class</span> <span class="code-type">ValidDocNameValidator</span>
-    <span class="code-keyword">implements</span> <span class="code-type">ConstraintValidator</span>&lt;<span class="code-type">ValidDocName</span>, <span class="code-type">String</span>&gt; {
-
-    <span class="code-keyword">private static final</span> <span class="code-type">Pattern</span> PATTERN =
-        <span class="code-type">Pattern</span>.<span class="code-method">compile</span>(<span class="code-string">"^[A-Za-z0-9_\\-]+\\.(pdf|docx|txt)$"</span>);
-
-    <span class="code-keyword">public boolean</span> <span class="code-method">isValid</span>(<span class="code-type">String</span> v, <span class="code-type">ConstraintValidatorContext</span> ctx) {
-        <span class="code-keyword">return</span> v != <span class="code-keyword">null</span> && PATTERN.<span class="code-method">matcher</span>(v).<span class="code-method">matches</span>();
-    }
-}
-
-<span class="code-comment">// 3. Use it like any other annotation</span>
-<span class="code-keyword">public record</span> <span class="code-type">DocumentRequest</span>(
-    <span class="code-annotation">@ValidDocName</span> <span class="code-type">String</span> name,
-    <span class="code-annotation">@NotBlank</span>     <span class="code-type">String</span> content
-) {}</pre>
-      </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Global Exception Handler for Validation Errors</div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-annotation">@RestControllerAdvice</span>
-<span class="code-keyword">public class</span> <span class="code-type">ValidationExceptionHandler</span> {
-
-    <span class="code-annotation">@ExceptionHandler</span>(<span class="code-type">MethodArgumentNotValidException</span>.<span class="code-keyword">class</span>)
-    <span class="code-keyword">public</span> <span class="code-type">ResponseEntity</span>&lt;<span class="code-type">Map</span>&lt;<span class="code-type">String</span>,<span class="code-type">String</span>&gt;&gt; <span class="code-method">handle</span>(
-        <span class="code-type">MethodArgumentNotValidException</span> ex) {
-
-        <span class="code-type">Map</span>&lt;<span class="code-type">String</span>,<span class="code-type">String</span>&gt; errors = ex.<span class="code-method">getBindingResult</span>()
-            .<span class="code-method">getFieldErrors</span>().<span class="code-method">stream</span>()
-            .<span class="code-method">collect</span>(<span class="code-type">Collectors</span>.<span class="code-method">toMap</span>(
-                <span class="code-type">FieldError</span>::<span class="code-method">getField</span>,
-                <span class="code-type">FieldError</span>::<span class="code-method">getDefaultMessage</span>
-            ));
-
-        <span class="code-keyword">return</span> <span class="code-type">ResponseEntity</span>.<span class="code-method">badRequest</span>().<span class="code-method">body</span>(errors);
+<span class="kw">public class</span> <span class="ty">ValidDocNameValidator</span>
+    <span class="kw">implements</span> <span class="ty">ConstraintValidator</span>&lt;<span class="ty">ValidDocName</span>, <span class="ty">String</span>&gt; {
+    <span class="kw">private static final</span> <span class="ty">Pattern</span> P =
+        <span class="ty">Pattern</span>.<span class="me">compile</span>(<span class="st">"^[A-Za-z0-9_\\-]+\\.(pdf|docx|txt)$"</span>);
+    <span class="kw">public boolean</span> <span class="me">isValid</span>(<span class="ty">String</span> v, <span class="ty">ConstraintValidatorContext</span> ctx) {
+        <span class="kw">return</span> v != <span class="kw">null</span> && P.<span class="me">matcher</span>(v).<span class="me">matches</span>();
     }
 }</pre>
       </div>
-      <div class="key-reminder"><b>Key Reminder:</b> <code style="font-family:IBM Plex Mono;font-size:12px">@NotNull</code> rejects null only. <code style="font-family:IBM Plex Mono;font-size:12px">@NotEmpty</code> rejects null and empty string/collection. <code style="font-family:IBM Plex Mono;font-size:12px">@NotBlank</code> rejects null, empty, AND whitespace-only strings. Choose carefully.</div>
+      <div class="msec"><div class="msec-title">Cross-Field Class-Level Validation</div>
+        <pre class="cb" style="font-size:11.5px;"><span class="an">@ValidDateRange</span>   <span class="cm">// applied to the whole record, not a field</span>
+<span class="kw">public record</span> <span class="ty">DateRangeRequest</span>(<span class="ty">LocalDate</span> from, <span class="ty">LocalDate</span> to) {}
+
+<span class="kw">class</span> <span class="ty">DateRangeValidator</span> <span class="kw">implements</span> <span class="ty">ConstraintValidator</span>&lt;<span class="ty">ValidDateRange</span>,<span class="ty">DateRangeRequest</span>&gt; {
+    <span class="kw">public boolean</span> <span class="me">isValid</span>(<span class="ty">DateRangeRequest</span> r, <span class="ty">ConstraintValidatorContext</span> ctx) {
+        <span class="kw">return</span> r.from() != <span class="kw">null</span> && r.to() != <span class="kw">null</span> && !r.from().<span class="me">isAfter</span>(r.to());
+    }
+}</pre>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- LOMBOK MODAL -->
-<div id="modal-lombok" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span class="modal-header-title">Lombok — Advanced Patterns & Pitfalls</span>
-      <button class="modal-close" onclick="closeModal('modal-lombok')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-section">
-        <div class="modal-section-title">@Builder with Validation via @Builder.ObtainVia</div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-annotation">@Value</span>
-<span class="code-annotation">@Builder</span>
-<span class="code-keyword">public class</span> <span class="code-type">DocumentDTO</span> {
-
-    <span class="code-annotation">@NonNull</span>                    <span class="code-comment">// Lombok null check in setter</span>
-    <span class="code-type">String</span> id;
-
-    <span class="code-annotation">@NonNull</span>
-    <span class="code-type">String</span> name;
-
-    <span class="code-annotation">@Builder.Default</span>            <span class="code-comment">// Default if not set by caller</span>
-    <span class="code-type">String</span> status = <span class="code-string">"PENDING"</span>;
-
-    <span class="code-annotation">@Builder.Default</span>
-    <span class="code-type">Instant</span> createdAt = <span class="code-type">Instant</span>.<span class="code-method">now</span>();
-
-    <span class="code-annotation">@Singular</span>                   <span class="code-comment">// Generates addTag() / clearTags()</span>
-    <span class="code-type">List</span>&lt;<span class="code-type">String</span>&gt; tags;
+<div id="m-lombok" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Lombok — Pitfalls, @Singular, toBuilder</div></div><button class="mclose" onclick="closeM('m-lombok')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">@Singular — add list items one by one</div>
+        <pre class="cb" style="font-size:11.5px;"><span class="an">@Builder</span> <span class="kw">public class</span> <span class="ty">Report</span> {
+    <span class="an">@Singular</span> <span class="ty">List</span>&lt;<span class="ty">String</span>&gt; sections;
 }
-
-<span class="code-comment">// Usage with @Singular — add items one by one</span>
-<span class="code-type">DocumentDTO</span> doc = <span class="code-type">DocumentDTO</span>.<span class="code-method">builder</span>()
-    .<span class="code-method">id</span>(<span class="code-string">"d-001"</span>)
-    .<span class="code-method">name</span>(<span class="code-string">"Report.pdf"</span>)
-    .<span class="code-method">addTag</span>(<span class="code-string">"finance"</span>)
-    .<span class="code-method">addTag</span>(<span class="code-string">"q3"</span>)
-    .<span class="code-method">build</span>();</pre>
+<span class="ty">Report</span> r = <span class="ty">Report</span>.<span class="me">builder</span>()
+    .<span class="me">section</span>(<span class="st">"Intro"</span>).<span class="me">section</span>(<span class="st">"Analysis"</span>).<span class="me">section</span>(<span class="st">"Summary"</span>)
+    .<span class="me">build</span>();
+<span class="cm">// r.sections is unmodifiable — Lombok wraps with List.copyOf</span></pre>
       </div>
-      <div class="modal-section">
-        <div class="modal-section-title">Non-Destructive Copies with toBuilder</div>
-        <pre class="code-block" style="font-size:11.5px;"><span class="code-comment">// toBuilder = true lets you clone and modify without mutation</span>
-<span class="code-type">DocumentDTO</span> original = <span class="code-type">DocumentDTO</span>.<span class="code-method">builder</span>()
-    .<span class="code-method">id</span>(<span class="code-string">"d-001"</span>).<span class="code-method">name</span>(<span class="code-string">"Draft.pdf"</span>).<span class="code-method">build</span>();
-
-<span class="code-comment">// Produce a new object with status changed — original untouched</span>
-<span class="code-type">DocumentDTO</span> approved = original.<span class="code-method">toBuilder</span>()
-    .<span class="code-method">status</span>(<span class="code-string">"APPROVED"</span>)
-    .<span class="code-method">build</span>();
-
-<span class="code-comment">// original.status() still == "PENDING" — fully immutable</span></pre>
+      <div class="msec"><div class="msec-title">Common Pitfalls</div>
+        <div class="warn-box">⚠ <b>@Data on JPA entity</b>: generates equals/hashCode using all fields including id — breaks Hibernate session. Use <code class="il">@EqualsAndHashCode(of="id")</code> explicitly.</div>
+        <div class="warn-box" style="margin-top:6px">⚠ <b>@Builder.Default with inheritance</b>: doesn't propagate to parent builders — defaults must be redeclared in subclass builders.</div>
       </div>
-      <div class="modal-section">
-        <div class="modal-section-title">⚠ Key Lombok Pitfalls</div>
-        <div class="warning-box" style="margin-bottom:8px;">⚠ <b>@Data vs @Value:</b> @Data generates mutable getters/setters. @Value makes all fields final and generates no setters. Prefer @Value for DTOs.</div>
-        <div class="warning-box" style="margin-bottom:8px;">⚠ <b>@Builder.Default doesn't work with @NonNull:</b> Lombok generates separate code paths; mixing them can cause NullPointerException in edge cases. Test explicitly.</div>
-        <div class="warning-box">⚠ <b>IDE annotation processing:</b> Lombok requires the annotation processor enabled in your IDE. Missing this causes "cannot find symbol" errors that aren't real compilation errors.</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETABLEFUTURE MODAL -->
+<div id="m-cf" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">CompletableFuture — Advanced Patterns</div><div class="mhead-sub">timeouts · anyOf · exception handling chains</div></div><button class="mclose" onclick="closeM('m-cf')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Timeout + Fallback</div>
+        <pre class="cb yellow" style="font-size:11.5px;"><span class="cm">// Java 9+ orTimeout and completeOnTimeout</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; result =
+    <span class="ty">CompletableFuture</span>.<span class="me">supplyAsync</span>(() -&gt; slowService.<span class="me">call</span>())
+        .<span class="me">orTimeout</span>(<span class="nu">3</span>, <span class="ty">TimeUnit</span>.SECONDS)         <span class="cm">// throws TimeoutException</span>
+        .<span class="me">exceptionally</span>(ex -&gt; <span class="st">"fallback-value"</span>);  <span class="cm">// recover</span>
+
+<span class="cm">// completeOnTimeout — default instead of exception</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; safe =
+    <span class="ty">CompletableFuture</span>.<span class="me">supplyAsync</span>(() -&gt; slowService.<span class="me">call</span>())
+        .<span class="me">completeOnTimeout</span>(<span class="st">"fallback"</span>, <span class="nu">3</span>, <span class="ty">TimeUnit</span>.SECONDS);</pre>
       </div>
-      <div class="key-reminder"><b>Key Reminder:</b> Lombok is a compile-time tool — it adds zero runtime overhead. All generated code is visible in the compiled .class files and in your IDE's "delombok" view.</div>
+      <div class="msec"><div class="msec-title">anyOf — First to Finish Wins</div>
+        <pre class="cb yellow" style="font-size:11.5px;"><span class="cm">// Race multiple replicas — use whichever responds first</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">Object</span>&gt; fastest = <span class="ty">CompletableFuture</span>.<span class="me">anyOf</span>(
+    fetchFromRegion(<span class="st">"us-east"</span>),
+    fetchFromRegion(<span class="st">"eu-west"</span>),
+    fetchFromRegion(<span class="st">"ap-south"</span>)
+);
+<span class="ty">String</span> result = (<span class="ty">String</span>) fastest.<span class="me">join</span>();</pre>
+      </div>
+      <div class="msec"><div class="msec-title">handle() — Inspect Both Result & Error</div>
+        <pre class="cb yellow" style="font-size:11.5px;"><span class="cm">// handle() fires whether the stage succeeded or failed</span>
+<span class="ty">CompletableFuture</span>&lt;<span class="ty">Response</span>&gt; cf = fetchData()
+    .<span class="me">handle</span>((result, ex) -&gt; {
+        <span class="kw">if</span> (ex != <span class="kw">null</span>) {
+            metrics.<span class="me">incrementErrors</span>();
+            <span class="kw">return</span> <span class="ty">Response</span>.<span class="me">error</span>(ex.<span class="me">getMessage</span>());
+        }
+        <span class="kw">return</span> <span class="ty">Response</span>.<span class="me">ok</span>(result);
+    });</pre>
+        <div class="key-box"><b>handle() vs exceptionally():</b> <code class="il">exceptionally()</code> only fires on failure. <code class="il">handle()</code> always fires — use it when you need to do cleanup or metrics regardless of outcome.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASYNC MODAL -->
+<div id="m-async" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">@EnableAsync — Full Configuration Patterns</div></div><button class="mclose" onclick="closeM('m-async')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Multiple Named Executors</div>
+        <pre class="cb yellow" style="font-size:11.5px;"><span class="an">@Configuration</span> <span class="an">@EnableAsync</span>
+<span class="kw">public class</span> <span class="ty">AsyncConfig</span> {
+
+    <span class="an">@Bean</span>(<span class="st">"ocrExecutor"</span>)   <span class="cm">// for heavy OCR tasks</span>
+    <span class="kw">public</span> <span class="ty">Executor</span> <span class="me">ocrExecutor</span>() {
+        <span class="ty">ThreadPoolTaskExecutor</span> e = <span class="kw">new</span> <span class="ty">ThreadPoolTaskExecutor</span>();
+        e.<span class="me">setCorePoolSize</span>(<span class="nu">2</span>); e.<span class="me">setMaxPoolSize</span>(<span class="nu">8</span>);
+        e.<span class="me">setThreadNamePrefix</span>(<span class="st">"ocr-"</span>); e.<span class="me">initialize</span>();
+        <span class="kw">return</span> e;
+    }
+
+    <span class="an">@Bean</span>(<span class="st">"notifyExecutor"</span>)  <span class="cm">// for email/webhook notifications</span>
+    <span class="kw">public</span> <span class="ty">Executor</span> <span class="me">notifyExecutor</span>() {
+        <span class="ty">ThreadPoolTaskExecutor</span> e = <span class="kw">new</span> <span class="ty">ThreadPoolTaskExecutor</span>();
+        e.<span class="me">setCorePoolSize</span>(<span class="nu">1</span>); e.<span class="me">setMaxPoolSize</span>(<span class="nu">4</span>);
+        e.<span class="me">setThreadNamePrefix</span>(<span class="st">"notify-"</span>); e.<span class="me">initialize</span>();
+        <span class="kw">return</span> e;
+    }
+}
+<span class="an">@Service</span> <span class="kw">public class</span> <span class="ty">PipelineService</span> {
+    <span class="an">@Async</span>(<span class="st">"ocrExecutor"</span>)
+    <span class="kw">public</span> <span class="ty">CompletableFuture</span>&lt;<span class="ty">String</span>&gt; <span class="me">runOcr</span>(<span class="ty">Path</span> f) { ... }
+
+    <span class="an">@Async</span>(<span class="st">"notifyExecutor"</span>)
+    <span class="kw">public void</span> <span class="me">sendNotification</span>(<span class="ty">String</span> email) { ... }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOCKS MODAL -->
+<div id="m-locks" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Concurrent Locks — StampedLock & Deadlock Prevention</div></div><button class="mclose" onclick="closeM('m-locks')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">StampedLock — Optimistic Reads (Highest Throughput)</div>
+        <pre class="cb red" style="font-size:11.5px;"><span class="kw">private final</span> <span class="ty">StampedLock</span> sl = <span class="kw">new</span> <span class="ty">StampedLock</span>();
+<span class="kw">private double</span> x, y;
+
+<span class="kw">public double</span> <span class="me">distFromOrigin</span>() {
+    <span class="kw">long</span> stamp = sl.<span class="me">tryOptimisticRead</span>();    <span class="cm">// no lock acquired</span>
+    <span class="kw">double</span> curX = x, curY = y;
+    <span class="kw">if</span> (!sl.<span class="me">validate</span>(stamp)) {             <span class="cm">// was it modified?</span>
+        stamp = sl.<span class="me">readLock</span>();              <span class="cm">// fall back to real lock</span>
+        <span class="kw">try</span>   { curX = x; curY = y; }
+        <span class="kw">finally</span> { sl.<span class="me">unlockRead</span>(stamp); }
+    }
+    <span class="kw">return</span> <span class="ty">Math</span>.<span class="me">sqrt</span>(curX*curX + curY*curY);
+}</pre>
+      </div>
+      <div class="msec"><div class="msec-title">Deadlock Prevention — Lock Ordering</div>
+        <pre class="cb red" style="font-size:11.5px;"><span class="cm">// DEADLOCK RISK — inconsistent order</span>
+<span class="cm">// Thread A: lock(docA) then lock(docB)</span>
+<span class="cm">// Thread B: lock(docB) then lock(docA)  ← deadlock!</span>
+
+<span class="cm">// FIX — always lock in consistent ID order</span>
+<span class="kw">void</span> <span class="me">transfer</span>(<span class="ty">Document</span> a, <span class="ty">Document</span> b) {
+    <span class="ty">Document</span> first  = a.id().compareTo(b.id()) &lt; <span class="nu">0</span> ? a : b;
+    <span class="ty">Document</span> second = first == a ? b : a;
+    <span class="kw">synchronized</span>(first)  {
+        <span class="kw">synchronized</span>(second) { <span class="me">doTransfer</span>(a, b); }
+    }
+}</pre>
+        <div class="warn-box">⚠ <b>Lock + I/O = starvation.</b> Never do database calls, HTTP requests, or file reads inside a lock. Fetch the data first, then lock only for the write to shared state.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SINGLETON MODAL -->
+<div id="m-singleton" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Singleton — Holder Pattern & Spring Scopes</div></div><button class="mclose" onclick="closeM('m-singleton')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Initialization-On-Demand Holder (Best Classic Pattern)</div>
+        <pre class="cb red" style="font-size:11.5px;"><span class="cm">// No synchronization needed — JVM class loading is thread-safe</span>
+<span class="kw">public class</span> <span class="ty">ConfigService</span> {
+    <span class="kw">private</span> <span class="ty">ConfigService</span>() {}
+
+    <span class="kw">private static class</span> <span class="ty">Holder</span> {
+        <span class="kw">static final</span> <span class="ty">ConfigService</span> INSTANCE = <span class="kw">new</span> <span class="ty">ConfigService</span>();
+    }
+    <span class="kw">public static</span> <span class="ty">ConfigService</span> <span class="me">getInstance</span>() { <span class="kw">return</span> <span class="ty">Holder</span>.INSTANCE; }
+}
+<span class="cm">// Holder class loaded lazily on first getInstance() call</span>
+<span class="cm">// JVM guarantees static fields are initialised exactly once</span></pre>
+      </div>
+      <div class="msec"><div class="msec-title">Spring Bean Scopes</div>
+        <div class="dgrid">
+          <div class="dc"><div class="dc-lbl">singleton (default)</div><div class="dc-txt">One instance per ApplicationContext. Shared everywhere. Must be stateless or thread-safe.</div></div>
+          <div class="dc"><div class="dc-lbl">prototype</div><div class="dc-txt">New instance every injection. Use for stateful objects like builders or parsers.</div></div>
+          <div class="dc"><div class="dc-lbl">request</div><div class="dc-txt">New instance per HTTP request. Use for request-scoped state like current user.</div></div>
+          <div class="dc"><div class="dc-lbl">session</div><div class="dc-txt">One per HTTP session. Rare in stateless REST APIs.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLLER MODAL -->
+<div id="m-ctrl" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Controllers — Streaming, Multipart, Async</div></div><button class="mclose" onclick="closeM('m-ctrl')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Large File Streaming Download (StreamingResponseBody)</div>
+        <pre class="cb cyan" style="font-size:11.5px;"><span class="an">@GetMapping</span>(value=<span class="st">"/download/{id}"</span>, produces=<span class="ty">MediaType</span>.APPLICATION_OCTET_STREAM_VALUE)
+<span class="kw">public</span> <span class="ty">ResponseEntity</span>&lt;<span class="ty">StreamingResponseBody</span>&gt; <span class="me">download</span>(<span class="an">@PathVariable</span> <span class="ty">String</span> id) {
+    <span class="ty">InputStreamResource</span> resource = storage.<span class="me">getStream</span>(id);
+    <span class="ty">StreamingResponseBody</span> body = outputStream -&gt; {
+        <span class="kw">try</span> (<span class="kw">var</span> in = resource.<span class="me">getInputStream</span>()) {
+            in.<span class="me">transferTo</span>(outputStream);   <span class="cm">// streams — never loads all into RAM</span>
+        }
+    };
+    <span class="kw">return</span> <span class="ty">ResponseEntity</span>.<span class="me">ok</span>()
+        .<span class="me">header</span>(<span class="ty">HttpHeaders</span>.CONTENT_DISPOSITION, <span class="st">"attachment; filename="</span> + id)
+        .<span class="me">body</span>(body);
+}</pre>
+      </div>
+      <div class="msec"><div class="msec-title">Async Controller with DeferredResult</div>
+        <pre class="cb cyan" style="font-size:11.5px;"><span class="an">@PostMapping</span>(<span class="st">"/ingest"</span>)
+<span class="kw">public</span> <span class="ty">DeferredResult</span>&lt;<span class="ty">ResponseEntity</span>&lt;<span class="ty">String</span>&gt;&gt; <span class="me">ingest</span>(<span class="an">@RequestBody</span> <span class="ty">DocumentRequest</span> req) {
+    <span class="ty">DeferredResult</span>&lt;<span class="ty">ResponseEntity</span>&lt;<span class="ty">String</span>&gt;&gt; dr = <span class="kw">new</span> <span class="ty">DeferredResult</span>&lt;&gt;(<span class="nu">30_000L</span>);
+    dr.<span class="me">onTimeout</span>(() -&gt; dr.<span class="me">setErrorResult</span>(
+        <span class="ty">ResponseEntity</span>.<span class="me">status</span>(<span class="ty">HttpStatus</span>.REQUEST_TIMEOUT).<span class="me">body</span>(<span class="st">"Timeout"</span>)));
+
+    <span class="ty">CompletableFuture</span>.<span class="me">supplyAsync</span>(() -&gt; service.<span class="me">ingest</span>(req), executor)
+        .<span class="me">thenAccept</span>(id -&gt; dr.<span class="me">setResult</span>(<span class="ty">ResponseEntity</span>.<span class="me">accepted</span>().<span class="me">body</span>(id)))
+        .<span class="me">exceptionally</span>(ex -&gt; { dr.<span class="me">setErrorResult</span>(ex); <span class="kw">return null</span>; });
+    <span class="kw">return</span> dr;
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BEANS MODAL -->
+<div id="m-beans" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">@Component & @Bean — Conditional, Profiles, Qualifiers</div></div><button class="mclose" onclick="closeM('m-beans')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Conditional Bean Registration</div>
+        <pre class="cb green" style="font-size:11.5px;"><span class="an">@Bean</span>
+<span class="an">@ConditionalOnProperty</span>(name=<span class="st">"ocr.engine"</span>, havingValue=<span class="st">"tesseract"</span>)
+<span class="kw">public</span> <span class="ty">OcrEngine</span> <span class="me">tesseractEngine</span>() { <span class="kw">return new</span> <span class="ty">TesseractEngine</span>(); }
+
+<span class="an">@Bean</span>
+<span class="an">@ConditionalOnProperty</span>(name=<span class="st">"ocr.engine"</span>, havingValue=<span class="st">"cloud"</span>)
+<span class="kw">public</span> <span class="ty">OcrEngine</span> <span class="me">cloudOcrEngine</span>() { <span class="kw">return new</span> <span class="ty">CloudVisionEngine</span>(); }
+
+<span class="cm">// Switch engine via application.properties:</span>
+<span class="cm">// ocr.engine=tesseract   OR   ocr.engine=cloud</span></pre>
+      </div>
+      <div class="msec"><div class="msec-title">@Qualifier — Disambiguate Two Beans of Same Type</div>
+        <pre class="cb green" style="font-size:11.5px;"><span class="an">@Bean</span>(<span class="st">"primaryEs"</span>)   <span class="kw">public</span> <span class="ty">ElasticsearchClient</span> <span class="me">primary</span>()  { ... }
+<span class="an">@Bean</span>(<span class="st">"backupEs"</span>)    <span class="kw">public</span> <span class="ty">ElasticsearchClient</span> <span class="me">backup</span>()   { ... }
+
+<span class="an">@Service</span>
+<span class="kw">public class</span> <span class="ty">IndexService</span> {
+    <span class="kw">public</span> <span class="ty">IndexService</span>(
+        <span class="an">@Qualifier</span>(<span class="st">"primaryEs"</span>) <span class="ty">ElasticsearchClient</span> es) { ... }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADVICE MODAL -->
+<div id="m-advice" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">@ControllerAdvice — Advanced Error Handling</div></div><button class="mclose" onclick="closeM('m-advice')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Scoping @ControllerAdvice to Specific Packages</div>
+        <pre class="cb orange" style="font-size:11.5px;"><span class="cm">// Handle only controllers in this package</span>
+<span class="an">@RestControllerAdvice</span>(basePackages = <span class="st">"com.ibm.docservice.api.v2"</span>)
+<span class="kw">public class</span> <span class="ty">V2ExceptionHandler</span> { ... }
+
+<span class="cm">// Handle only specific controller classes</span>
+<span class="an">@RestControllerAdvice</span>(assignableTypes = {<span class="ty">DocumentController</span>.<span class="kw">class</span>, <span class="ty">SearchController</span>.<span class="kw">class</span>})
+<span class="kw">public class</span> <span class="ty">DocSearchHandler</span> { ... }</pre>
+      </div>
+      <div class="msec"><div class="msec-title">@InitBinder — Pre-process Request Parameters</div>
+        <pre class="cb orange" style="font-size:11.5px;"><span class="an">@RestControllerAdvice</span>
+<span class="kw">public class</span> <span class="ty">GlobalAdvice</span> {
+
+    <span class="cm">// Trim all String parameters globally</span>
+    <span class="an">@InitBinder</span>
+    <span class="kw">public void</span> <span class="me">initBinder</span>(<span class="ty">WebDataBinder</span> binder) {
+        <span class="kw">var</span> editor = <span class="kw">new</span> <span class="ty">StringTrimmerEditor</span>(<span class="kw">true</span>);
+        binder.<span class="me">registerCustomEditor</span>(<span class="ty">String</span>.<span class="kw">class</span>, editor);
+    }
+
+    <span class="cm">// Add attributes to every model (useful for Thymeleaf)</span>
+    <span class="an">@ModelAttribute</span>(<span class="st">"appVersion"</span>)
+    <span class="kw">public</span> <span class="ty">String</span> <span class="me">appVersion</span>() { <span class="kw">return</span> <span class="st">"2.1.0"</span>; }
+}</pre>
+        <div class="key-box"><b>Key Reminder:</b> <code class="il">@RestControllerAdvice</code> is <em>not</em> a filter or interceptor — it only handles exceptions thrown from within controller methods. Exceptions thrown in filters are not caught by it.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPORAL MODAL -->
+<div id="m-temporal" class="modal">
+  <div class="mbox">
+    <div class="mhead"><div><div class="mhead-title">Temporal — Full Architecture + Elasticsearch Mapping</div></div><button class="mclose" onclick="closeM('m-temporal')">×</button></div>
+    <div class="mbody">
+      <div class="msec"><div class="msec-title">Elasticsearch Index Mapping for OCR Documents</div>
+        <pre class="cb green" style="font-size:11.5px;"><span class="cm">// Go: create index with mapping before indexing documents</span>
+<span class="kw">const</span> mapping = `{
+  "mappings": {
+    "properties": {
+      "id":         { "type": "keyword" },
+      "name":       { "type": "keyword" },
+      "text":       { "type": "text", "analyzer": "english" },
+      "docType":    { "type": "keyword" },
+      "pageCount":  { "type": "integer" },
+      "indexedAt":  { "type": "date" },
+      "storageKey": { "type": "keyword", "index": false }
+    }
+  }
+}`
+es.Indices.Create(<span class="st">"documents"</span>,
+    es.Indices.Create.WithBody(strings.NewReader(mapping)))</pre>
+      </div>
+      <div class="msec"><div class="msec-title">Temporal Worker — Concurrency Controls</div>
+        <pre class="cb purple" style="font-size:11.5px;"><span class="kw">func</span> main() {
+    w := worker.New(c, <span class="st">"ocr-queue"</span>, worker.Options{
+        <span class="cm">// Max concurrent OCR activities — tune to CPU cores</span>
+        MaxConcurrentActivityExecutionSize:  <span class="nu">4</span>,
+        <span class="cm">// Max concurrent workflow tasks (orchestration)</span>
+        MaxConcurrentWorkflowTaskExecutionSize: <span class="nu">10</span>,
+        <span class="cm">// Per-second rate limit — prevent overwhelming Elastic</span>
+        WorkerActivitiesPerSecond: <span class="nu">5.0</span>,
+    })
+}</pre>
+      </div>
+      <div class="msec"><div class="msec-title">Java: Query Elasticsearch After Indexing</div>
+        <pre class="cb cyan" style="font-size:11.5px;"><span class="an">@Service</span> <span class="an">@RequiredArgsConstructor</span>
+<span class="kw">public class</span> <span class="ty">SearchService</span> {
+    <span class="kw">private final</span> <span class="ty">ElasticsearchClient</span> es;
+
+    <span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">DocumentDTO</span>&gt; <span class="me">search</span>(<span class="ty">String</span> query, <span class="kw">int</span> size) <span class="kw">throws</span> <span class="ty">IOException</span> {
+        <span class="ty">SearchResponse</span>&lt;<span class="ty">DocumentDTO</span>&gt; resp = es.<span class="me">search</span>(s -&gt; s
+            .<span class="me">index</span>(<span class="st">"documents"</span>)
+            .<span class="me">query</span>(q -&gt; q.<span class="me">match</span>(m -&gt; m
+                .<span class="me">field</span>(<span class="st">"text"</span>)
+                .<span class="me">query</span>(query)))
+            .<span class="me">size</span>(size),
+            <span class="ty">DocumentDTO</span>.<span class="kw">class</span>);
+        <span class="kw">return</span> resp.<span class="me">hits</span>().<span class="me">hits</span>().<span class="me">stream</span>()
+            .<span class="me">map</span>(<span class="ty">Hit</span>::<span class="me">source</span>).<span class="me">toList</span>();
+    }
+}</pre>
+      </div>
     </div>
   </div>
 </div>
 
 
 <script>
-  // Modal
-  function openModal(id)  { document.getElementById(id).classList.add('open'); }
-  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-  document.querySelectorAll('.modal-overlay').forEach(m =>
-    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
-  );
+// Modal
+function openM(id)  { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
+);
 
-  // Tabs
-  function switchTab(group, tab) {
-    const panels = document.querySelectorAll(`[id^="${group}-"]`);
-    const tabs   = document.querySelectorAll('.modal-tab');
-    panels.forEach(p => p.classList.remove('active'));
-    tabs.forEach(t => t.classList.remove('active'));
-    document.getElementById(`${group}-${tab}`).classList.add('active');
-    event.target.classList.add('active');
+// Sidebar
+function goTo(id) { document.getElementById(id).scrollIntoView({ behavior:'smooth', block:'start' }); }
+
+// Simulation
+async function runSim() {
+  const name    = document.getElementById('sName').value.trim();
+  const type    = document.getElementById('sType').value;
+  const content = document.getElementById('sContent').value.trim();
+  const out     = document.getElementById('simOut');
+  const btn     = document.getElementById('simBtn');
+
+  const errors = [];
+  if (!name)                       errors.push('❌ [Jakarta] name: must not be blank (@NotBlank)');
+  if (content.length > 0 && content.length < 5) errors.push('❌ [Jakarta] content: size must be >= 5 (@Size min=5)');
+  if (content.length > 5000)       errors.push('❌ [Jakarta] content: size must be <= 5000 (@Size max=5000)');
+  if (!content)                    errors.push('❌ [Jakarta] content: must not be blank (@NotBlank)');
+
+  if (errors.length) {
+    out.style.color = '#ff8389';
+    out.textContent = '// ControllerAdvice → handleValidation() → 400 Bad Request\n\n' + errors.join('\n');
+    return;
   }
 
-  // Simulation
-  function simulate() {
-    const name    = document.getElementById('sim-name').value.trim();
-    const type    = document.getElementById('sim-type').value;
-    const content = document.getElementById('sim-content').value.trim();
-    const out     = document.getElementById('output');
+  out.style.color = '#78a9ff';
+  out.textContent = '// Running pipeline...';
+  btn.disabled = true;
 
-    const errors = [];
-    if (!name)            errors.push('ValidationError: name must not be blank (@NotBlank)');
-    if (content.length < 5 && content.length > 0)
-                          errors.push('ValidationError: content length ' + content.length + ' < 5 (@Size min=5)');
-    if (content.length > 5000) errors.push('ValidationError: content length ' + content.length + ' > 5000 (@Size max=5000)');
-    if (!content)         errors.push('ValidationError: content must not be blank (@NotBlank)');
+  const steps = [
+    { ms:300,  text: (o) => `// [1] @Valid passed — DocumentRequest OK
+//     name="${o.name}" type="${o.type}" content.length=${o.cl}` },
+    { ms:600,  text: (o) => `// [2] Builder → Document constructed
+${JSON.stringify({id:o.id, name:o.name, type:o.type, status:'RECEIVED', valid:true}, null, 4)}` },
+    { ms:900,  text: (o) => `// [3] StorageService.uploadStreamed()
+//     storageKey = "s3://ibm-docs/${o.id}/${o.name}"
+//     uploadedBytes = ${o.cl * 3} bytes (streamed — never fully in RAM)` },
+    { ms:1300, text: (o) => `// [4] TemporalClient.startOcrWorkflow()
+//     taskQueue    = "ocr-queue"
+//     workflowId   = "wf-${o.wfId}"
+//     timeout      = 30 minutes
+//     input        = { storageKey, docName, type }` },
+    { ms:1700, text: (o) => `// [5] Go Worker picked up task from "ocr-queue"
+//     → ExtractTextActivity() started
+//     → gosseract.Client.Text() running...
+//     → Heartbeat sent: "ocr-in-progress"` },
+    { ms:2100, text: (o) => `// [6] Tesseract OCR complete
+//     extractedChars = ${Math.floor(o.cl * 4.2)}
+//     pages          = ${Math.ceil(o.cl / 1000)}
+//     confidence     = 94.7%` },
+    { ms:2500, text: (o) => `// [7] Go Worker → IndexDocumentActivity()
+//     es.Index("documents", id="${o.id}", refresh="wait_for")
+//     indexed fields: id, name, text, docType, pageCount, indexedAt` },
+    { ms:2900, text: (o) => `// [8] SSE emitter → browser receives status update
+//     event: { status: "INDEXED", workflowId: "wf-${o.wfId}" }
 
-    if (errors.length) {
-      out.style.color = '#ff8389';
-      out.textContent = '// Build FAILED — Constraint violations:\n\n' + errors.join('\n');
-      return;
-    }
+// ─────────────────────────────────────────────────────────
+// ✅  PIPELINE COMPLETE
+// ─────────────────────────────────────────────────────────
+${JSON.stringify({
+  workflowId:  "wf-" + o.wfId,
+  documentId:  o.id,
+  status:      "INDEXED",
+  storageKey:  "s3://ibm-docs/" + o.id + "/" + o.name,
+  esIndex:     "documents",
+  textChars:   Math.floor(o.cl * 4.2),
+  duration_ms: 2847,
+  nextAction:  "GET /api/v1/search?q=" + encodeURIComponent(o.name.split('.')[0])
+}, null, 4)}` }
+  ];
 
-    const result = {
-      "builder": "DefaultBuilder.build()",
-      "document": {
-        id:        crypto.randomUUID(),
-        name:      name,
-        type:      type,
-        status:    "RECEIVED",
-        valid:     true,
-        createdAt: new Date().toISOString(),
-        isProcessable: true
-      },
-      "validation": "PASSED",
-      "pipeline":   "INGESTION_QUEUE → PROCESSING → INDEXED"
-    };
+  const ctx = {
+    id:   crypto.randomUUID(),
+    wfId: Math.random().toString(36).substring(2,10).toUpperCase(),
+    name, type,
+    cl:   content.length
+  };
 
-    out.style.color = '#42be65';
-    out.textContent = JSON.stringify(result, null, 2);
+  for (const step of steps) {
+    await new Promise(r => setTimeout(r, step.ms));
+    out.style.color = step.ms >= 2900 ? '#42be65' : '#78a9ff';
+    out.textContent = step.text(ctx);
   }
+  btn.disabled = false;
+}
 
-  // Quiz
-  function checkQuiz() {
-    const q1 = document.querySelector('input[name="q1"]:checked');
-    const q2 = document.querySelector('input[name="q2"]:checked');
-    const q3 = document.querySelector('input[name="q3"]:checked');
-    const out = document.getElementById('quizOut');
-
-    if (!q1 || !q2 || !q3) {
-      out.style.display = 'block';
-      out.className = 'quiz-result quiz-wrong';
-      out.textContent = '⚠ Please answer all 3 questions before checking.';
-      return;
-    }
-
-    const score = [q1.value === 'b', q2.value === 'a', q3.value === 'c'].filter(Boolean).length;
-    out.style.display = 'block';
-
-    if (score === 3) {
-      out.className = 'quiz-result quiz-correct';
-      out.textContent = '✓ Perfect score! All 3 correct. You understand the Builder pattern, Lombok, and Jakarta Validation.';
-    } else {
-      out.className = 'quiz-result quiz-wrong';
-      out.textContent = `✗ ${score}/3 correct. Review the sections above. Hint: Q1→Object Creation, Q2→Non-destructive copies, Q3→@NotBlank handles whitespace.`;
-    }
+// Quiz
+function checkQuiz() {
+  const answers = { q1:'b', q2:'b', q3:'b', q4:'b', q5:'b' };
+  let score = 0;
+  const out = document.getElementById('qOut');
+  for (const [q, correct] of Object.entries(answers)) {
+    const sel = document.querySelector(`input[name="${q}"]:checked`);
+    if (!sel) { out.style.display='block'; out.className='q-res q-no'; out.textContent='⚠ Please answer all 5 questions.'; return; }
+    if (sel.value === correct) score++;
   }
-
-  // Sidebar scroll spy
-  function scrollTo(id) {
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  out.style.display = 'block';
+  if (score === 5) {
+    out.className = 'q-res q-ok';
+    out.textContent = '✓ Perfect 5/5! You have strong command of Java 21 enterprise patterns, async, Temporal, and Spring.';
+  } else {
+    out.className = 'q-res q-no';
+    out.textContent = `✗ ${score}/5 correct. Review hints: Q1→Object creation, Q2→flatMap for futures, Q3→Temporal payload size, Q4→@Bean for third-party classes, Q5→self-invocation proxy bypass.`;
   }
+}
 </script>
-
 </body>
 </html>
